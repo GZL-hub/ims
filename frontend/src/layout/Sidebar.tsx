@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
                   Overview
                 </div>
                 <div className="space-y-1">
-                  <NavItem href="/" icon={LayoutDashboard}>
+                  <NavItem href="/dashboard" icon={LayoutDashboard}>
                     Dashboard
                   </NavItem>
                   <NavItem href="#" icon={BarChart2}>

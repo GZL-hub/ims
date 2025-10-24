@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { useLocation, Link } from 'react-router-dom';
-import { Moon, Sun, Bell, ChevronRight, User } from 'lucide-react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { Moon, Sun, Bell, ChevronRight, User, LogOut } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
@@ -11,13 +11,14 @@ interface BreadcrumbItem {
 const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Generate breadcrumbs based on current route
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs: BreadcrumbItem[] = [{ label: 'IMS', href: '/' }];
+    const breadcrumbs: BreadcrumbItem[] = [{ label: 'IMS', href: '/dashboard' }];
 
-    if (pathSegments.length === 0) {
+    if (pathSegments.length === 0 || pathSegments[0] === 'dashboard') {
       breadcrumbs.push({ label: 'Dashboard' });
     } else {
       pathSegments.forEach((segment, index) => {
@@ -28,6 +29,12 @@ const Header: React.FC = () => {
     }
 
     return breadcrumbs;
+  };
+
+  const handleLogout = () => {
+    // TODO: Implement actual logout logic (clear tokens, etc.)
+    console.log('Logging out...');
+    navigate('/login');
   };
 
   const breadcrumbs = getBreadcrumbs();
@@ -54,38 +61,48 @@ const Header: React.FC = () => {
       </div>
 
       {/* Right side actions */}
-      <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
+      <div className="flex items-center gap-2 ml-auto sm:ml-0">
         {/* Notifications */}
         <button
           type="button"
-          className="p-1.5 sm:p-2 hover:bg-background-200 rounded-full transition-colors"
+          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
           aria-label="Notifications"
         >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-text-700" />
+          <Bell className="h-5 w-5 text-text-700" />
         </button>
 
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-1.5 sm:p-2 hover:bg-background-200 rounded-full transition-colors"
+          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
-            <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-text-700" />
+            <Moon className="h-5 w-5 text-text-700" />
           ) : (
-            <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-text-700" />
+            <Sun className="h-5 w-5 text-text-700" />
           )}
         </button>
 
         {/* User Profile */}
         <button
           type="button"
-          className="focus:outline-none"
+          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
           aria-label="User menu"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-500 flex items-center justify-center ring-2 ring-background-200">
+          <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
           </div>
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
+          aria-label="Logout"
+          title="Logout"
+        >
+          <LogOut className="h-5 w-5 text-text-700" />
         </button>
       </div>
     </header>
