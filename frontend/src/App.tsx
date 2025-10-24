@@ -7,6 +7,9 @@ import Roles from './pages/Roles';
 import Inventory from './pages/Inventory';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
+import Reports from './pages/Reports';
+import Alerts from './pages/Alerts';
+import Orders from './pages/Orders';
 
 function App() {
   return (
@@ -21,8 +24,11 @@ function App() {
 
           {/* Protected routes with Layout */}
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/roles" element={<Layout><Roles /></Layout>} />
+          <Route path="/reports" element={<Layout><Reports /></Layout>} />
+          <Route path="/alerts" element={<Layout><Alerts /></Layout>} />
+          <Route path="/orders" element={<Layout><Orders /></Layout>} />
           <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
+          <Route path="/roles" element={<Layout><Roles /></Layout>} />
           <Route path="/users" element={<Layout><Users /></Layout>} />
           <Route path="/settings" element={<Layout><Settings /></Layout>} />
         </Routes>

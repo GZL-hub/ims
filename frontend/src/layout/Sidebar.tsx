@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import JapaneseLogo from '../components/JapaneseLogo';
 import {
   LayoutDashboard,
   Shield,
@@ -9,7 +10,8 @@ import {
   HelpCircle,
   Menu,
   BarChart2,
-  Folder,
+  AlertTriangle,
+  ShoppingCart,
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -71,14 +73,13 @@ const Sidebar: React.FC = () => {
         <div className="h-full flex flex-col">
           {/* Logo */}
           <div className="h-16 px-6 flex items-center border-b border-background-200">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">IMS</span>
+            <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <JapaneseLogo className="text-primary-600" size={32} />
+              <div>
+                <span className="text-lg font-bold text-text-950 block">i-IMS</span>
+                <span className="text-xs text-text-600">Inventory System</span>
               </div>
-              <span className="text-lg font-semibold text-text-950">
-                Inventory System
-              </span>
-            </div>
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -93,11 +94,11 @@ const Sidebar: React.FC = () => {
                   <NavItem href="/dashboard" icon={LayoutDashboard}>
                     Dashboard
                   </NavItem>
-                  <NavItem href="#" icon={BarChart2}>
-                    Analytics
+                  <NavItem href="/reports" icon={BarChart2}>
+                    Reports & Analytics
                   </NavItem>
-                  <NavItem href="#" icon={Folder}>
-                    Projects
+                  <NavItem href="/alerts" icon={AlertTriangle}>
+                    Alerts
                   </NavItem>
                 </div>
               </div>
@@ -111,11 +112,14 @@ const Sidebar: React.FC = () => {
                   <NavItem href="/inventory" icon={Package}>
                     Inventory
                   </NavItem>
+                  <NavItem href="/orders" icon={ShoppingCart}>
+                    Orders
+                  </NavItem>
                   <NavItem href="/users" icon={Users}>
                     Users
                   </NavItem>
                   <NavItem href="/roles" icon={Shield}>
-                    Roles
+                    Roles & Access
                   </NavItem>
                 </div>
               </div>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import JapaneseLogo from '../components/JapaneseLogo';
+import ShaderBackground from '../components/ShaderBackground';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -21,21 +23,31 @@ const Login: React.FC = () => {
 
   return (
     <section className="flex flex-col md:flex-row h-screen items-center">
-      {/* Image Section */}
-      <div className="bg-primary-600 hidden lg:block w-full md:w-1/2 xl:w-2/3 h-screen">
-        {/* Empty for now - placeholder for future image */}
-        <div className="w-full h-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-          <div className="text-background-50 text-center">
-            <h2 className="text-4xl font-bold mb-4">Inventory Management System</h2>
-            <p className="text-xl opacity-90">Manage your inventory with ease</p>
+      {/* Shader Section */}
+      <div className="hidden lg:block w-full md:w-1/2 xl:w-2/3 h-screen relative">
+        <ShaderBackground>
+          <div className="flex items-center items-center h-full px-6">
+            <div className="text-background-50 text-left px-8">
+              <h1 className="text-4xl font-bold mb-6 font-geist tracking-tight">
+                I-IMS: Inclusive Inventory Management System
+              </h1>
+              <p className="text-xl leading-relaxed">
+                <span className="font-semibold"> Access your inventory dashboard,</span>
+                <span className="font-semibold"> monitor stock levels, </span> {' '}
+                <span className="font-semibold">and manage operations with full accessibility</span>.
+              </p>
+            </div>
           </div>
-        </div>
+        </ShaderBackground>
       </div>
 
       {/* Form Section */}
       <div className="bg-background-50 w-full md:max-w-md lg:max-w-full md:mx-auto md:mx-0 md:w-1/2 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center">
         <div className="w-full h-100">
-          <h1 className="text-xl font-bold text-text-900">i-IMS</h1>
+          <div className="flex items-center gap-2">
+            <JapaneseLogo className="text-primary-600" size={32} />
+            <h1 className="text-xl font-bold text-text-900">i-IMS</h1>
+          </div>
 
           <h1 className="text-xl md:text-2xl font-bold leading-tight mt-12 text-text-900">
             Log in to your account
