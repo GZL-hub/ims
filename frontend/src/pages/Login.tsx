@@ -26,12 +26,12 @@ const Login: React.FC = () => {
       {/* Shader Section */}
       <div className="hidden lg:block w-full md:w-1/2 xl:w-2/3 h-screen relative">
         <ShaderBackground>
-          <div className="flex items-center items-center h-full px-6">
+          <div className="flex items-center h-full px-6">
             <div className="text-background-50 text-left px-8">
-              <h1 className="text-4xl font-bold mb-6 font-geist tracking-tight">
+              <h1 className=" text-white text-4xl font-bold mb-6 font-geist tracking-tight">
                 I-IMS: Inclusive Inventory Management System
               </h1>
-              <p className="text-xl leading-relaxed">
+              <p className="text-white text-xl leading-relaxed">
                 <span className="font-semibold"> Access your inventory dashboard,</span>
                 <span className="font-semibold"> monitor stock levels, </span> {' '}
                 <span className="font-semibold">and manage operations with full accessibility</span>.

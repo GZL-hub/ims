@@ -55,24 +55,24 @@ const ExpiryAlerts: React.FC = () => {
     switch (severity) {
       case 'critical':
         return {
-          bg: 'bg-red-50 border-red-200',
+          bg: 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-300',
           badge: 'bg-red-500',
-          icon: <AlertTriangle className="w-4 h-4 text-red-600" />,
-          text: 'text-red-700',
+          icon: <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-700" />,
+          text: 'text-red-700 dark:text-white',
         };
       case 'warning':
         return {
-          bg: 'bg-yellow-50 border-yellow-200',
+          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-400',
           badge: 'bg-yellow-500',
-          icon: <AlertCircle className="w-4 h-4 text-yellow-600" />,
-          text: 'text-yellow-700',
+          icon: <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-700" />,
+          text: 'text-yellow-700 dark:text-white',
         };
       case 'low-stock':
         return {
-          bg: 'bg-orange-50 border-orange-200',
-          badge: 'bg-orange-500',
-          icon: <TrendingDown className="w-4 h-4 text-orange-600" />,
-          text: 'text-orange-700',
+          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-300',
+          badge: 'bg-yellow-500',
+          icon: <TrendingDown className="w-4 h-4 text-yellow-600 dark:text-yellow-700" />,
+          text: 'text-yellow-700 dark:text-white',
         };
     }
   };
@@ -89,13 +89,13 @@ const ExpiryAlerts: React.FC = () => {
   };
 
   return (
-    <div className="bg-background-50 border border-background-200 rounded-lg p-6 shadow-sm">
+    <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-600" />
+          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-700" />
           <h2 className="text-xl font-semibold text-text-950">Stock & Expiry Alerts</h2>
         </div>
-        <span className="px-3 py-1 bg-red-100 text-red-700 text-sm font-semibold rounded-full">
+        <span className="px-3 py-1 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-800 text-sm font-semibold rounded-full">
           {alerts.length} Alerts
         </span>
       </div>
@@ -120,19 +120,19 @@ const ExpiryAlerts: React.FC = () => {
                         {getSeverityLabel(alert.severity)}
                       </span>
                     </div>
-                    <p className="text-text-600 text-xs mb-2">SKU: {alert.sku}</p>
+                    <p className="text-text-600 dark:text-text-700 text-xs mb-2">SKU: {alert.sku}</p>
                     <div className="flex items-center gap-4 text-xs">
                       <div>
-                        <span className="text-text-500">Quantity:</span>
-                        <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600' : 'text-text-700'}`}>
+                        <span className="text-text-500 dark:text-text-600">Quantity:</span>
+                        <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600 dark:text-red-700' : 'text-text-700 dark:text-text-800'}`}>
                           {alert.quantity} units
                         </span>
                       </div>
                       {alert.severity !== 'low-stock' && (
                         <>
                           <div>
-                            <span className="text-text-500">Expires:</span>
-                            <span className="ml-1 font-semibold text-text-700">{alert.expiryDate}</span>
+                            <span className="text-text-500 dark:text-text-600">Expires:</span>
+                            <span className="ml-1 font-semibold text-text-700 dark:text-text-800">{alert.expiryDate}</span>
                           </div>
                           <div>
                             <span className={`font-semibold ${styles.text}`}>
@@ -144,7 +144,7 @@ const ExpiryAlerts: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <button className="text-primary-600 hover:text-primary-700 text-xs font-medium flex-shrink-0">
+                <button className="text-primary-600 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-800 text-xs font-medium flex-shrink-0">
                   Action
                 </button>
               </div>
@@ -153,8 +153,8 @@ const ExpiryAlerts: React.FC = () => {
         })}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-background-200">
-        <button className="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors text-sm">
+      <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-500">
+        <button className="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-300 text-white font-medium rounded-lg transition-colors text-sm">
           View All Alerts
         </button>
       </div>
