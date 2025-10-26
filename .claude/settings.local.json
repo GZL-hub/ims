@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Read(//Users/admin/.claude/**)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

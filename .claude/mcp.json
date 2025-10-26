@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "playwright-design": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "Playwright MCP server for design testing and visual validation"
+    }
+  },
+  "projectConfig": {
+    "frontendUrl": "http://localhost:5173",
+    "backendUrl": "http://localhost:3001",
+    "defaultViewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "testViewports": {
+      "desktop": {
+        "width": 1920,
+        "height": 1080
+      }
+    },
+    "routes": [
+      "/",
+      "/roles",
+      "/inventory",
+      "/users",
+      "/settings"
+    ],
+    "themes": ["light", "dark"]
+  }
+}
