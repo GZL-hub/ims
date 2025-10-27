@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   ChevronLeft,
   ChevronRight,
+  ScanBarcode,
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -142,6 +143,9 @@ const Sidebar: React.FC = () => {
                 <div className="space-y-1">
                   <NavItem href="/inventory" icon={Package}>
                     Inventory
+                  </NavItem>
+                  <NavItem href="/barcode-scanner" icon={ScanBarcode}>
+                    Barcode Scanner
                   </NavItem>
                   <NavItem href="/orders" icon={ShoppingCart}>
                     Orders

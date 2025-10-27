@@ -10,6 +10,7 @@ import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
 import Orders from './pages/Orders';
+import BarcodeScanner from './pages/BarcodeScanner';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/alerts" element={<Layout><Alerts /></Layout>} />
           <Route path="/orders" element={<Layout><Orders /></Layout>} />
           <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
+          <Route path="/barcode-scanner" element={<Layout><BarcodeScanner /></Layout>} />
           <Route path="/roles" element={<Layout><Roles /></Layout>} />
           <Route path="/users" element={<Layout><Users /></Layout>} />
           <Route path="/settings" element={<Layout><Settings /></Layout>} />
