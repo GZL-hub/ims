@@ -43,3 +43,42 @@ export const deleteItem = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Search inventory items by barcode or item name
+export const searchItems = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    // Search by barcode or item name (case-insensitive, partial match)
+    const items = await Inventory.find({
+      $or: [
+        { barcode: { $regex: query, $options: 'i' } },
+        { item_name: { $regex: query, $options: 'i' } }
+      ]
+    }).limit(10); // Limit to 10 results for autocomplete
+
+    res.json(items);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get item by barcode
+export const getItemByBarcode = async (req: Request, res: Response) => {
+  try {
+    const { barcode } = req.params;
+    const item = await Inventory.findOne({ barcode });
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.json(item);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
