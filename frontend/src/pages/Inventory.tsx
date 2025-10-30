@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import type { AxiosResponse } from "axios";
-import { Package, AlertTriangle, CheckCircle } from "lucide-react";
+import { Package, AlertTriangle, CheckCircle, Edit, Trash2 } from "lucide-react";
 
 interface InventoryItem {
   _id: string;
@@ -37,6 +37,22 @@ const Inventory: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleEdit = (item: InventoryItem) => {
+    console.log("Editing item:", item);
+    // (Later we'll open an edit modal here)
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+      await axios.delete(`http://localhost:3001/api/inventory/${id}`);
+      setItems((prev) => prev.filter((item) => item._id !== id)); // instantly update UI
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  };
 
   if (loading) {
     return <p className="text-text-600">Loading inventory...</p>;
@@ -100,20 +116,23 @@ const Inventory: React.FC = () => {
         <table className="min-w-full divide-y divide-background-200">
           <thead className="bg-background-100">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
                 Item Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
                 Category
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
                 Quantity
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
                 Last Updated
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
@@ -121,10 +140,10 @@ const Inventory: React.FC = () => {
             {items.map((item) => (
               <tr key={item._id}>
                 <td className="px-6 py-4 text-sm text-text-900">{item.item_name}</td>
-                <td className="px-6 py-4 text-sm text-text-700">{item.category}</td>
-                <td className="px-6 py-4 text-sm text-text-700">{item.quantity}</td>
+                <td className="px-6 py-4 text-sm text-text-700 text-center">{item.category}</td>
+                <td className="px-6 py-4 text-sm text-text-700 text-center">{item.quantity}</td>
                 <td
-                  className={`px-6 py-4 text-sm font-medium ${
+                  className={`px-6 py-4 text-sm font-medium text-center ${
                     item.status === "Low Stock"
                       ? "text-yellow-600"
                       : item.status === "Expired"
@@ -134,10 +153,24 @@ const Inventory: React.FC = () => {
                 >
                   {item.status}
                 </td>
-                <td className="px-6 py-4 text-sm text-text-700">
+                <td className="px-6 py-4 text-sm text-text-700 text-center">
                   {item.last_updated
                     ? new Date(item.last_updated).toLocaleDateString()
                     : "-"}
+                </td>
+                <td className="px-6 py-4 text-sm text-text-700 flex justify-center gap-5">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="text-primary-600 hover:text-primary-800 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="text-red-600 hover:text-red-800 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </td>
               </tr>
             ))}
