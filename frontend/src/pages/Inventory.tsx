@@ -19,6 +19,22 @@ interface InventoryItem {
 const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  // Track form values for required fields
+  const [formData, setFormData] = useState({
+    item_name: "",
+    category: "",
+    quantity: "",
+  });
+
+  // Handle input changes
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   useEffect(() => {
     axios
@@ -37,6 +53,31 @@ const Inventory: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleAddItem = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const newItem = Object.fromEntries(formData.entries());
+
+    try {
+      await axios.post("http://localhost:3001/api/inventory", newItem);
+      setShowModal(false);
+      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory");
+      setItems(res.data);
+    } catch (error) {
+      console.error("Error adding item:", error);
+    }
+  };
+
+  const categories = [
+    "Electronics",
+    "Furniture",
+    "Stationery",
+    "Cleaning Supplies",
+    "Tools",
+    "Other",
+  ];
 
   const handleEdit = (item: InventoryItem) => {
     console.log("Editing item:", item);
@@ -68,7 +109,10 @@ const Inventory: React.FC = () => {
             Track and manage facility inventory and resources
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+        >
           <Package className="w-4 h-4" />
           Add Item
         </button>
@@ -177,6 +221,112 @@ const Inventory: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* --- Add Item Modal --- */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 shadow-2xl w-full max-w-md border border-background-200 dark:border-[#2a2a2a] transition-all duration-200">
+            <h2 className="text-xl font-semibold text-text-950 mb-4">Add New Item</h2>
+
+            <form onSubmit={handleAddItem} className="space-y-3">
+              {/* Item Name */}
+              <label className="block text-sm font-medium text-text-900 dark:text-white">
+                Item Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="item_name"
+                placeholder="Enter item name"
+                value={formData.item_name}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-md p-2 dark:bg-background-700 dark:border-background-600"
+                required
+              />
+
+              {/* Category */}
+              <label className="block text-sm font-medium text-text-900 dark:text-white">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-md p-2 dark:bg-background-700 dark:border-background-600"
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+
+              {/* Quantity */}
+              <label className="block text-sm font-medium text-text-900 dark:text-white">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="quantity"
+                placeholder="Enter quantity"
+                value={formData.quantity}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-md p-2 dark:bg-background-700 dark:border-background-600"
+                required
+              />
+
+              {/* Expiry Date */}
+              <label className="block text-sm font-medium text-text-900 dark:text-white">
+                Expiry Date (optional)
+              </label>
+              <input
+                type="date"
+                name="expiry_date"
+                className="w-full border border-gray-300 rounded-md p-2 dark:bg-background-700 dark:border-background-600"
+              />
+
+              {/* Barcode */}
+              <label className="block text-sm font-medium text-text-900 dark:text-white">
+                Barcode (optional)
+              </label>
+              <input
+                type="text"
+                name="barcode"
+                placeholder="Enter barcode (if applicable)"
+                className="w-full border border-gray-300 rounded-md p-2 dark:bg-background-700 dark:border-background-600"
+              />
+
+              {/* Disclaimer */}
+              <p className="text-xs text-text-600 mt-2">
+                <span className="text-red-500">*</span> Fields marked with an asterisk are required. You cannot proceed without filling them.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!formData.item_name || !formData.category || !formData.quantity}
+                  className={`px-4 py-2 rounded-md text-white transition-colors ${
+                    !formData.item_name || !formData.category || !formData.quantity
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-primary-600 hover:bg-primary-700"
+                  }`}
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
