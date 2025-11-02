@@ -20,12 +20,12 @@ const BarcodeScanner: React.FC = () => {
   const [manualInput, setManualInput] = useState('');
   const [recentScans, setRecentScans] = useState<ScanResultData[]>([]);
   const [currentScan, setCurrentScan] = useState<ScanResultData | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [isScanning] = useState(false);
   const [suggestions, setSuggestions] = useState<InventoryItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Focus on input when switching to manual mode
   useEffect(() => {

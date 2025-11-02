@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -15,6 +17,13 @@ const MONGO_URI = process.env.MONGO_URI as string;
 app.use(cors());
 app.use(express.json());
 
+// Authentication routes (public and protected)
+app.use("/api/auth", authRoutes);
+
+// User management routes (protected)
+app.use("/api/users", userRoutes);
+
+// Inventory routes
 app.use("/api/inventory", inventoryRoutes);
 
 // Connect to MongoDB
