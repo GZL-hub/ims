@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { api } from '../utils/apiClient';
 
 export type InventoryItem = {
   _id: string;
@@ -19,7 +19,7 @@ export type InventoryItem = {
  */
 export const searchInventoryItems = async (query: string): Promise<InventoryItem[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory/search?query=${encodeURIComponent(query)}`);
+    const response = await api.get(`/inventory/search?query=${encodeURIComponent(query)}`);
 
     if (!response.ok) {
       throw new Error('Failed to search inventory items');
@@ -38,7 +38,7 @@ export const searchInventoryItems = async (query: string): Promise<InventoryItem
  */
 export const getInventoryItemByBarcode = async (barcode: string): Promise<InventoryItem> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory/barcode/${encodeURIComponent(barcode)}`);
+    const response = await api.get(`/inventory/barcode/${encodeURIComponent(barcode)}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -60,7 +60,7 @@ export const getInventoryItemByBarcode = async (barcode: string): Promise<Invent
  */
 export const getAllInventoryItems = async (): Promise<InventoryItem[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory`);
+    const response = await api.get('/inventory');
 
     if (!response.ok) {
       throw new Error('Failed to fetch inventory items');
@@ -79,13 +79,7 @@ export const getAllInventoryItems = async (): Promise<InventoryItem[]> => {
  */
 export const createInventoryItem = async (item: Omit<InventoryItem, '_id'>): Promise<InventoryItem> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
+    const response = await api.post('/inventory', item);
 
     if (!response.ok) {
       throw new Error('Failed to create inventory item');
@@ -104,13 +98,7 @@ export const createInventoryItem = async (item: Omit<InventoryItem, '_id'>): Pro
  */
 export const updateInventoryItem = async (id: string, item: Partial<InventoryItem>): Promise<InventoryItem> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
+    const response = await api.put(`/inventory/${id}`, item);
 
     if (!response.ok) {
       throw new Error('Failed to update inventory item');
@@ -129,9 +117,7 @@ export const updateInventoryItem = async (id: string, item: Partial<InventoryIte
  */
 export const deleteInventoryItem = async (id: string): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await api.delete(`/inventory/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to delete inventory item');

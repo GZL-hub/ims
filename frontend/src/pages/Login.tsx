@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import JapaneseLogo from '../components/JapaneseLogo';
 import ShaderBackground from '../components/ShaderBackground';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual authentication logic
-    console.log('Login attempt:', { email, password });
-    // For now, redirect to dashboard after form submission
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      await login({ email, password });
+      navigate('/');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -52,6 +63,12 @@ const Login: React.FC = () => {
           <h1 className="text-xl md:text-2xl font-bold leading-tight mt-12 text-text-900">
             Log in to your account
           </h1>
+
+          {error && (
+            <div className="mt-4 rounded-md bg-red-50 p-4 border border-red-200">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
 
           <form className="mt-6" onSubmit={handleSubmit}>
             <div>
@@ -92,9 +109,10 @@ const Login: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full block bg-primary-500 hover:bg-primary-400 focus:bg-primary-400 text-background-50 font-semibold rounded-lg px-4 py-3 mt-6 transition-colors"
+              disabled={loading}
+              className="w-full block bg-primary-500 hover:bg-primary-400 focus:bg-primary-400 text-background-50 font-semibold rounded-lg px-4 py-3 mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Log In
+              {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
@@ -132,12 +150,12 @@ const Login: React.FC = () => {
 
           <p className="mt-8 text-text-900">
             Need an account?{' '}
-            <a
-              href="#"
+            <Link
+              to="/register"
               className="text-primary-500 hover:text-primary-700 font-semibold transition-colors"
             >
               Create an account
-            </a>
+            </Link>
           </p>
 
           <p className="text-sm text-text-500 mt-12">&copy; 2025 i-IMS - All Rights Reserved.</p>
