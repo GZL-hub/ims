@@ -18,7 +18,7 @@ const InventorySchema = new Schema<IInventory>({
   quantity: { type: Number, required: true },
   expiry_date: { type: Date },
   threshold: { type: Number, default: 1 },
-  barcode: { type: String, required: false, unique: true },
+  barcode: { type: String, required: false},
   status: { type: String, default: "In Stock" },
   date_added: { type: Date, default: Date.now },
   last_updated: { type: Date, default: Date.now },

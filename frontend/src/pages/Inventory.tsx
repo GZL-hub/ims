@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 import { Package, AlertTriangle, CheckCircle, Edit, Trash2 } from "lucide-react";
+import { authService } from "../services/authService";
 
 interface InventoryItem {
   _id: string;
@@ -37,8 +38,11 @@ const Inventory: React.FC = () => {
   };
 
   useEffect(() => {
+    const token = authService.getAccessToken(); 
     axios
-      .get<InventoryItem[]>("http://localhost:3001/api/inventory")
+      .get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` }, 
+      })
       .then((res: AxiosResponse<InventoryItem[]>) => {
         setItems(res.data);
         setLoading(false);
@@ -59,11 +63,16 @@ const Inventory: React.FC = () => {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const newItem = Object.fromEntries(formData.entries());
+    const token = authService.getAccessToken(); 
 
     try {
-      await axios.post("http://localhost:3001/api/inventory", newItem);
+      await axios.post("http://localhost:3001/api/inventory", newItem, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setShowModal(false);
-      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory");
+      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setItems(res.data);
     } catch (error) {
       console.error("Error adding item:", error);
@@ -87,9 +96,13 @@ const Inventory: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
 
+    const token = authService.getAccessToken(); 
+
     try {
-      await axios.delete(`http://localhost:3001/api/inventory/${id}`);
-      setItems((prev) => prev.filter((item) => item._id !== id)); // instantly update UI
+      await axios.delete(`http://localhost:3001/api/inventory/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }, 
+      });
+      setItems((prev) => prev.filter((item) => item._id !== id)); 
     } catch (error) {
       console.error("Error deleting item:", error);
     }
