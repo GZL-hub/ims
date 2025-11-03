@@ -24,5 +24,4 @@ const InventorySchema = new Schema<IInventory>({
   last_updated: { type: Date, default: Date.now },
 });
 
-// 👇 This third argument ensures Mongoose uses the existing 'inventory' collection
 export default mongoose.model<IInventory>("Inventory", InventorySchema, "inventory");

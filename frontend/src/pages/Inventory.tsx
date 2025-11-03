@@ -21,6 +21,7 @@ const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
   // Track form values for required fields
   const [formData, setFormData] = useState({
@@ -58,6 +59,24 @@ const Inventory: React.FC = () => {
       });
   }, []);
 
+  // Prefill modal form when editing an item
+  useEffect(() => {
+    if (editingItem) {
+      setFormData({
+        item_name: editingItem.item_name || "",
+        category: editingItem.category || "",
+        quantity: editingItem.quantity.toString() || "",
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        item_name: "",
+        category: "",
+        quantity: "",
+      });
+    }
+  }, [editingItem]);
+
   const handleAddItem = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -89,8 +108,36 @@ const Inventory: React.FC = () => {
   ];
 
   const handleEdit = (item: InventoryItem) => {
-    console.log("Editing item:", item);
-    // (Later we'll open an edit modal here)
+    setEditingItem(item);
+    setShowModal(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const updatedItem = Object.fromEntries(formData.entries());
+    const token = authService.getAccessToken();
+
+    try {
+      await axios.put(
+        `http://localhost:3001/api/inventory/${editingItem._id}`,
+        updatedItem,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems(res.data);
+
+      setShowModal(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Error saving edited item:", error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -239,9 +286,9 @@ const Inventory: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 shadow-2xl w-full max-w-md border border-background-200 dark:border-[#2a2a2a] transition-all duration-200">
-            <h2 className="text-xl font-semibold text-text-950 mb-4">Add New Item</h2>
+            <h2 className="text-xl font-semibold text-text-950 mb-4">{editingItem ? "Edit Item" : "Add New Item"}</h2>
 
-            <form onSubmit={handleAddItem} className="space-y-3">
+            <form onSubmit={editingItem ? handleSaveEdit : handleAddItem} className="space-y-3">
               {/* Item Name */}
               <label className="block text-sm font-medium text-text-900 dark:text-white">
                 Item Name <span className="text-red-500">*</span>
@@ -319,7 +366,11 @@ const Inventory: React.FC = () => {
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingItem(null);
+                    setFormData({ item_name: "", category: "", quantity: "" });
+                  }}
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   Cancel
