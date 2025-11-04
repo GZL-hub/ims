@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 import { Package, AlertTriangle, CheckCircle, Edit, Trash2 } from "lucide-react";
+import { authService } from "../services/authService";
 
 interface InventoryItem {
   _id: string;
@@ -20,6 +21,9 @@ const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);  
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
 
   // Track form values for required fields
   const [formData, setFormData] = useState({
@@ -37,8 +41,11 @@ const Inventory: React.FC = () => {
   };
 
   useEffect(() => {
+    const token = authService.getAccessToken(); 
     axios
-      .get<InventoryItem[]>("http://localhost:3001/api/inventory")
+      .get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` }, 
+      })
       .then((res: AxiosResponse<InventoryItem[]>) => {
         setItems(res.data);
         setLoading(false);
@@ -54,16 +61,39 @@ const Inventory: React.FC = () => {
       });
   }, []);
 
+  // Prefill modal form when editing an item
+  useEffect(() => {
+    if (editingItem) {
+      setFormData({
+        item_name: editingItem.item_name || "",
+        category: editingItem.category || "",
+        quantity: editingItem.quantity.toString() || "",
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        item_name: "",
+        category: "",
+        quantity: "",
+      });
+    }
+  }, [editingItem]);
+
   const handleAddItem = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
     const newItem = Object.fromEntries(formData.entries());
+    const token = authService.getAccessToken(); 
 
     try {
-      await axios.post("http://localhost:3001/api/inventory", newItem);
+      await axios.post("http://localhost:3001/api/inventory", newItem, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setShowModal(false);
-      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory");
+      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setItems(res.data);
     } catch (error) {
       console.error("Error adding item:", error);
@@ -80,16 +110,47 @@ const Inventory: React.FC = () => {
   ];
 
   const handleEdit = (item: InventoryItem) => {
-    console.log("Editing item:", item);
-    // (Later we'll open an edit modal here)
+    setEditingItem(item);
+    setShowModal(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const updatedItem = Object.fromEntries(formData.entries());
+    const token = authService.getAccessToken();
+
+    try {
+      await axios.put(
+        `http://localhost:3001/api/inventory/${editingItem._id}`,
+        updatedItem,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const res = await axios.get<InventoryItem[]>("http://localhost:3001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems(res.data);
+
+      setShowModal(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Error saving edited item:", error);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
-
+    const token = authService.getAccessToken();
     try {
-      await axios.delete(`http://localhost:3001/api/inventory/${id}`);
-      setItems((prev) => prev.filter((item) => item._id !== id)); // instantly update UI
+      await axios.delete(`http://localhost:3001/api/inventory/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems((prev) => prev.filter((item) => item._id !== id));
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     } catch (error) {
       console.error("Error deleting item:", error);
     }
@@ -210,7 +271,10 @@ const Inventory: React.FC = () => {
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(item._id)}
+                    onClick={() => {
+                      setItemToDelete(item);
+                      setShowDeleteModal(true);
+                    }}
                     className="text-red-600 hover:text-red-800 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -226,9 +290,9 @@ const Inventory: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 shadow-2xl w-full max-w-md border border-background-200 dark:border-[#2a2a2a] transition-all duration-200">
-            <h2 className="text-xl font-semibold text-text-950 mb-4">Add New Item</h2>
+            <h2 className="text-xl font-semibold text-text-950 mb-4">{editingItem ? "Edit Item" : "Add New Item"}</h2>
 
-            <form onSubmit={handleAddItem} className="space-y-3">
+            <form onSubmit={editingItem ? handleSaveEdit : handleAddItem} className="space-y-3">
               {/* Item Name */}
               <label className="block text-sm font-medium text-text-900 dark:text-white">
                 Item Name <span className="text-red-500">*</span>
@@ -306,7 +370,11 @@ const Inventory: React.FC = () => {
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingItem(null);
+                    setFormData({ item_name: "", category: "", quantity: "" });
+                  }}
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   Cancel
@@ -324,6 +392,38 @@ const Inventory: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- Delete Confirmation Modal --- */}
+      {showDeleteModal && itemToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 shadow-2xl w-full max-w-sm border border-background-200 dark:border-[#2a2a2a] transition-all duration-200">
+            <h2 className="text-xl font-semibold text-text-950 mb-3 text-center">
+              Confirm Delete
+            </h2>
+            <p className="text-text-700 dark:text-gray-300 text-center mb-6">
+              Are you sure you want to permanently delete{" "}
+              <span className="font-semibold text-red-500">{itemToDelete.item_name}</span> from the inventory?
+              <br />
+              This action cannot be undone.
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(itemToDelete._id)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
