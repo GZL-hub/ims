@@ -21,7 +21,9 @@ const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);  
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
 
   // Track form values for required fields
   const [formData, setFormData] = useState({
@@ -141,15 +143,14 @@ const Inventory: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
-
-    const token = authService.getAccessToken(); 
-
+    const token = authService.getAccessToken();
     try {
       await axios.delete(`http://localhost:3001/api/inventory/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }, 
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setItems((prev) => prev.filter((item) => item._id !== id)); 
+      setItems((prev) => prev.filter((item) => item._id !== id));
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     } catch (error) {
       console.error("Error deleting item:", error);
     }
@@ -270,7 +271,10 @@ const Inventory: React.FC = () => {
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(item._id)}
+                    onClick={() => {
+                      setItemToDelete(item);
+                      setShowDeleteModal(true);
+                    }}
                     className="text-red-600 hover:text-red-800 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -388,6 +392,38 @@ const Inventory: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- Delete Confirmation Modal --- */}
+      {showDeleteModal && itemToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-6 shadow-2xl w-full max-w-sm border border-background-200 dark:border-[#2a2a2a] transition-all duration-200">
+            <h2 className="text-xl font-semibold text-text-950 mb-3 text-center">
+              Confirm Delete
+            </h2>
+            <p className="text-text-700 dark:text-gray-300 text-center mb-6">
+              Are you sure you want to permanently delete{" "}
+              <span className="font-semibold text-red-500">{itemToDelete.item_name}</span> from the inventory?
+              <br />
+              This action cannot be undone.
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(itemToDelete._id)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
