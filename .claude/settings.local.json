@@ -5,7 +5,8 @@
       "Read(//Users/admin/.claude/**)",
       "Bash(npm install:*)",
       "WebSearch",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
