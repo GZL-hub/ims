@@ -8,6 +8,7 @@ export type InventoryItem = {
   expiry_date?: string;
   threshold: number;
   barcode: string;
+  image?: string; // URL or base64 string for item image
   status?: string;
   date_added?: string;
   last_updated?: string;

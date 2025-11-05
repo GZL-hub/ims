@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, X, Loader2 } from "lucide-react";
+import { Package, X, Loader2, Upload, Image as ImageIcon } from "lucide-react";
 
 interface AddItemModalProps {
   isOpen: boolean;
@@ -12,8 +12,10 @@ interface AddItemModalProps {
     threshold: string;
     barcode: string;
     expiry_date: string;
+    image: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onImageChange: (imageData: string) => void;
   isSubmitting: boolean;
   categories: string[];
 }
@@ -24,10 +26,26 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   onSubmit,
   formData,
   onInputChange,
+  onImageChange,
   isSubmitting,
   categories,
 }) => {
   if (!isOpen) return null;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onImageChange(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    onImageChange("");
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
@@ -158,6 +176,49 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 disabled={isSubmitting}
               />
+            </div>
+
+            {/* Image Upload */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">
+                Item Image
+              </label>
+              {formData.image ? (
+                <div className="relative">
+                  <div className="w-full h-48 rounded-lg overflow-hidden bg-background-100 dark:bg-background-800 border border-background-300 dark:border-background-600">
+                    <img
+                      src={formData.image}
+                      alt="Item preview"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    disabled={isSubmitting}
+                    className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-background-300 dark:border-background-600 rounded-lg cursor-pointer hover:bg-background-50 dark:hover:bg-background-800 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-10 h-10 text-text-400 mb-3" />
+                    <p className="text-sm text-text-700 dark:text-text-300 font-medium mb-1">
+                      Click to upload image
+                    </p>
+                    <p className="text-xs text-text-500">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={isSubmitting}
+                  />
+                </label>
+              )}
             </div>
           </div>
 
