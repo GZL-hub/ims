@@ -65,7 +65,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 placeholder="e.g., Laptop, Desk Chair, Printer"
                 value={formData.item_name}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-950 text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 required
                 disabled={isSubmitting}
               />
@@ -80,7 +80,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 name="category"
                 value={formData.category}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-950 text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 required
                 disabled={isSubmitting}
               >
@@ -104,7 +104,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 placeholder="0"
                 value={formData.quantity}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-950 text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 required
                 min="0"
                 disabled={isSubmitting}
@@ -122,7 +122,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 placeholder="10"
                 value={formData.threshold}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-950 text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 min="0"
                 disabled={isSubmitting}
               />
@@ -139,8 +139,8 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 name="expiry_date"
                 value={formData.expiry_date}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                disabled={isSubmitting}
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white  text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                disabled={isSubmitting}dark:bg-background-950
               />
             </div>
 
@@ -155,7 +155,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                 placeholder="Enter or scan barcode"
                 value={formData.barcode}
                 onChange={onInputChange}
-                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-800 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full border border-background-300 dark:border-background-600 rounded-lg px-4 py-2.5 bg-white dark:bg-background-950 text-text-900 dark:text-text-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 disabled={isSubmitting}
               />
             </div>
@@ -163,7 +163,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
 
           {/* Info Notice */}
           <div className="mt-6 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-            <p className="text-sm text-primary-800 dark:text-primary-200">
+            <p className="text-sm text-primary-800 dark:text-primary-900">
               <span className="font-medium">Note:</span> Fields marked with <span className="text-red-500">*</span> are required.
             </p>
           </div>
