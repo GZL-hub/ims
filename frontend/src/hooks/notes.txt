@@ -1,0 +1,103 @@
+Notes 
+
+useTTS.ts (Text-to-Speech Hook) 
+
+What it does: Converts text into spoken audio using the browser's built-in speech synthesis. 
+
+ 
+
+Core components: 
+
+speak(text, options) - Main function that makes text speak 
+
+Uses SpeechSynthesisUtterance (browser API) to create a speech object 
+
+Options: rate (speed), pitch (voice tone), volume 
+
+isSpeaking - Boolean state that tracks if speech is active  
+
+Updates when speech starts/stops 
+
+Used to change button states (Play/Stop) 
+
+voices - Array of available voices on the system  
+
+Loads asynchronously when component mounts 
+
+Different browsers have different voices 
+
+Event handlers:  
+
+onstart → Sets isSpeaking = true 
+
+onend → Sets isSpeaking = false 
+
+onerror → Handles errors and logs them 
+
+ 
+
+How it works step-by-step: 
+
+User clicks "Read Alerts" button 
+
+Button calls speak("Alert message") 
+
+Hook creates SpeechSynthesisUtterance object with the text 
+
+Browser's speech engine speaks the text 
+
+When done, onend fires and updates stat 
+
+ 
+
+useVoiceCommands.ts (Voice Recognition Hook) 
+
+What it does: Listens to your voice and matches what you say to predefined commands. 
+
+ 
+
+Core components: 
+
+Speech Recognition API - Browser's voice recognition  
+
+webkitSpeechRecognition (Chrome/Edge) 
+
+Converts speech → text (transcript) 
+
+transcript - The final text of what you said  
+
+Used to match against commands 
+
+interimTranscript - Text as you're speaking (real-time)  
+
+Shows what the browser thinks you're saying 
+
+Command matching:  
+
+Converts your speech to lowercase text 
+
+Checks if transcript includes any command strings 
+
+Supports regex for flexible matching (e.g., "search for X") 
+
+ 
+
+How it works step-by-step: 
+
+User clicks "Voice Commands" button 
+
+startListening() is called 
+
+Browser asks for microphone permission 
+
+User says "read my alerts" 
+
+Speech → transcript: "read my alerts" 
+
+Hook finds matching command 
+
+Executes the command's action() function 
+
+ 
+
+ 
