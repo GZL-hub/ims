@@ -210,7 +210,7 @@ const Inventory: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* --- Header Section --- */}
+        {/* Header Section */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-text-600">
