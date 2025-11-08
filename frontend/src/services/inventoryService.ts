@@ -8,10 +8,23 @@ export type InventoryItem = {
   expiry_date?: string;
   threshold: number;
   barcode: string;
-  image?: string; // URL or base64 string for item image
+  image?: string; // URL path to image file (e.g., "uploads/items/image-123.jpg")
   status?: string;
   date_added?: string;
   last_updated?: string;
+};
+
+export type InventoryItemInput = Omit<InventoryItem, '_id' | 'image' | 'status' | 'date_added' | 'last_updated'> & {
+  image?: File; // File object for creating/updating items
+};
+
+// Helper function to get full image URL
+export const getImageUrl = (imagePath?: string): string | undefined => {
+  if (!imagePath) return undefined;
+  // If already a full URL, return it
+  if (imagePath.startsWith('http')) return imagePath;
+  // Otherwise, prepend backend URL
+  return `http://localhost:3001/${imagePath}`;
 };
 
 /**
@@ -78,9 +91,30 @@ export const getAllInventoryItems = async (): Promise<InventoryItem[]> => {
 /**
  * Create a new inventory item
  */
-export const createInventoryItem = async (item: Omit<InventoryItem, '_id'>): Promise<InventoryItem> => {
+export const createInventoryItem = async (item: InventoryItemInput): Promise<InventoryItem> => {
   try {
-    const response = await api.post('/inventory', item);
+    const formData = new FormData();
+
+    // Append all fields to FormData
+    formData.append('item_name', item.item_name);
+    formData.append('category', item.category);
+    formData.append('quantity', item.quantity.toString());
+    formData.append('threshold', item.threshold.toString());
+
+    if (item.barcode) {
+      formData.append('barcode', item.barcode);
+    }
+
+    if (item.expiry_date) {
+      formData.append('expiry_date', item.expiry_date);
+    }
+
+    // Append image file if provided
+    if (item.image instanceof File) {
+      formData.append('image', item.image);
+    }
+
+    const response = await api.post('/inventory', formData);
 
     if (!response.ok) {
       throw new Error('Failed to create inventory item');
@@ -97,9 +131,41 @@ export const createInventoryItem = async (item: Omit<InventoryItem, '_id'>): Pro
 /**
  * Update an existing inventory item
  */
-export const updateInventoryItem = async (id: string, item: Partial<InventoryItem>): Promise<InventoryItem> => {
+export const updateInventoryItem = async (id: string, item: Partial<InventoryItemInput>): Promise<InventoryItem> => {
   try {
-    const response = await api.put(`/inventory/${id}`, item);
+    const formData = new FormData();
+
+    // Append fields that are provided
+    if (item.item_name !== undefined) {
+      formData.append('item_name', item.item_name);
+    }
+
+    if (item.category !== undefined) {
+      formData.append('category', item.category);
+    }
+
+    if (item.quantity !== undefined) {
+      formData.append('quantity', item.quantity.toString());
+    }
+
+    if (item.threshold !== undefined) {
+      formData.append('threshold', item.threshold.toString());
+    }
+
+    if (item.barcode !== undefined) {
+      formData.append('barcode', item.barcode);
+    }
+
+    if (item.expiry_date !== undefined) {
+      formData.append('expiry_date', item.expiry_date);
+    }
+
+    // Append image file if provided
+    if (item.image instanceof File) {
+      formData.append('image', item.image);
+    }
+
+    const response = await api.put(`/inventory/${id}`, formData);
 
     if (!response.ok) {
       throw new Error('Failed to update inventory item');

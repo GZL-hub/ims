@@ -1,5 +1,7 @@
 import React from "react";
 import { Package, X, Loader2, Upload } from "lucide-react";
+import { getImageUrl } from "../../services/inventoryService";
+import type { InventoryItem } from "../../services/inventoryService";
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -12,10 +14,11 @@ interface EditItemModalProps {
     threshold: string;
     barcode: string;
     expiry_date: string;
-    image: string;
   };
+  selectedItem: InventoryItem | null;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onImageChange: (imageData: string) => void;
+  onImageChange: (file: File | null) => void;
+  imageFile: File | null;
   isSubmitting: boolean;
   categories: string[];
 }
@@ -25,8 +28,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
   onClose,
   onSubmit,
   formData,
+  selectedItem,
   onInputChange,
   onImageChange,
+  imageFile,
   isSubmitting,
   categories,
 }) => {
@@ -35,16 +40,23 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onImageChange(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      onImageChange(file);
     }
   };
 
   const removeImage = () => {
-    onImageChange("");
+    onImageChange(null);
+  };
+
+  // Determine which image to show: new upload, existing, or none
+  const getImagePreview = () => {
+    if (imageFile) {
+      return URL.createObjectURL(imageFile);
+    }
+    if (selectedItem?.image) {
+      return getImageUrl(selectedItem.image);
+    }
+    return null;
   };
 
   return (
@@ -183,11 +195,11 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
               <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">
                 Item Image
               </label>
-              {formData.image ? (
+              {getImagePreview() ? (
                 <div className="relative">
                   <div className="w-full h-48 rounded-lg overflow-hidden bg-background-100 dark:bg-background-100 border border-background-300 dark:border-background-300">
                     <img
-                      src={formData.image}
+                      src={getImagePreview()!}
                       alt="Item preview"
                       className="w-full h-full object-contain"
                     />
@@ -200,6 +212,11 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                   >
                     <X className="w-4 h-4" />
                   </button>
+                  {imageFile && (
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+                      New image selected
+                    </div>
+                  )}
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-background-300 dark:border-background-300 rounded-lg cursor-pointer hover:bg-background-50 dark:hover:bg-background-100 transition-colors">
@@ -208,7 +225,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                     <p className="text-sm text-text-700 dark:text-text-300 font-medium mb-1">
                       Click to upload image
                     </p>
-                    <p className="text-xs text-text-500">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-text-500">PNG, JPG, GIF up to 5MB</p>
                   </div>
                   <input
                     type="file"

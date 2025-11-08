@@ -13,11 +13,16 @@ export const apiClient = async (
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<Response> => {
-  const { requiresAuth = true, headers = {}, ...restOptions } = options;
+  const { requiresAuth = true, headers = {}, body, ...restOptions } = options;
+
+  // Check if body is FormData
+  const isFormData = body instanceof FormData;
 
   // Prepare headers
   const requestHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
+    // Only set Content-Type for non-FormData requests
+    // FormData will set its own Content-Type with boundary
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...headers,
   };
 
@@ -32,6 +37,7 @@ export const apiClient = async (
   // Make the request
   let response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...restOptions,
+    body,
     headers: requestHeaders,
   });
 
@@ -45,6 +51,7 @@ export const apiClient = async (
 
       response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...restOptions,
+        body,
         headers: requestHeaders,
       });
     } catch {
@@ -68,21 +75,21 @@ export const api = {
     apiClient(endpoint, {
       ...options,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
     }),
 
   put: (endpoint: string, data?: unknown, options?: RequestOptions) =>
     apiClient(endpoint, {
       ...options,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
     }),
 
   patch: (endpoint: string, data?: unknown, options?: RequestOptions) =>
     apiClient(endpoint, {
       ...options,
       method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
     }),
 
   delete: (endpoint: string, options?: RequestOptions) =>

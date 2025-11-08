@@ -35,8 +35,10 @@ const Inventory: React.FC = () => {
     threshold: "",
     barcode: "",
     expiry_date: "",
-    image: "",
   });
+
+  // Track image file separately
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Handle input changes
   const handleInputChange = (
@@ -47,8 +49,8 @@ const Inventory: React.FC = () => {
   };
 
   // Handle image upload
-  const handleImageChange = (imageData: string) => {
-    setFormData((prev) => ({ ...prev, image: imageData }));
+  const handleImageChange = (file: File | null) => {
+    setImageFile(file);
   };
 
   // Reset form data
@@ -60,8 +62,8 @@ const Inventory: React.FC = () => {
       threshold: "",
       barcode: "",
       expiry_date: "",
-      image: "",
     });
+    setImageFile(null);
   };
 
   // Show success message
@@ -87,8 +89,8 @@ const Inventory: React.FC = () => {
       threshold: item.threshold.toString(),
       barcode: item.barcode || "",
       expiry_date: item.expiry_date ? item.expiry_date.split("T")[0] : "",
-      image: item.image || "",
     });
+    setImageFile(null); // Reset image file for edit
     setModalType("edit");
   };
 
@@ -132,7 +134,7 @@ const Inventory: React.FC = () => {
       threshold: Number(formData.threshold) || 10,
       barcode: formData.barcode || "",
       expiry_date: formData.expiry_date || undefined,
-      image: formData.image || undefined,
+      image: imageFile || undefined, // Use File object instead of base64
     };
 
     try {
@@ -165,7 +167,7 @@ const Inventory: React.FC = () => {
       threshold: Number(formData.threshold) || 10,
       barcode: formData.barcode || "",
       expiry_date: formData.expiry_date || undefined,
-      image: formData.image || undefined,
+      image: imageFile || undefined, // Use File object instead of base64
     };
 
     try {
@@ -259,6 +261,7 @@ const Inventory: React.FC = () => {
         formData={formData}
         onInputChange={handleInputChange}
         onImageChange={handleImageChange}
+        imageFile={imageFile}
         isSubmitting={isSubmitting}
         categories={categories}
       />
@@ -268,8 +271,10 @@ const Inventory: React.FC = () => {
         onClose={closeModal}
         onSubmit={handleEditItem}
         formData={formData}
+        selectedItem={selectedItem}
         onInputChange={handleInputChange}
         onImageChange={handleImageChange}
+        imageFile={imageFile}
         isSubmitting={isSubmitting}
         categories={categories}
       />

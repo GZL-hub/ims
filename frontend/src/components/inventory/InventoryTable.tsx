@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import ReactDOM from "react-dom";
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,8 +11,9 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { Edit, Trash2, ChevronUp, ChevronDown, Package } from "lucide-react";
+import { Edit, Trash2, ChevronUp, ChevronDown, Package, X } from "lucide-react";
 import type { InventoryItem } from "../../services/inventoryService";
+import { getImageUrl } from "../../services/inventoryService";
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -24,6 +26,19 @@ const columnHelper = createColumnHelper<InventoryItem>();
 const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [zoomedImage, setZoomedImage] = React.useState<{ url: string; name: string } | null>(null);
+
+  // Handle ESC key to close zoom modal
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && zoomedImage) {
+        setZoomedImage(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [zoomedImage]);
 
   const columns = useMemo(
     () => [
@@ -31,29 +46,41 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
       columnHelper.accessor("image", {
         header: "Image",
         cell: (info) => {
-          const imageUrl = info.getValue();
+          const imagePath = info.getValue();
+          const imageUrl = getImageUrl(imagePath);
+          const itemName = info.row.original.item_name;
+
           return (
             <div className="flex justify-center">
-              <div className="w-12 h-12 rounded-lg overflow-hidden bg-background-200 flex items-center justify-center">
+              <div
+                className={`w-12 h-12 rounded-lg overflow-hidden bg-background-200 dark:bg-background-300 flex items-center justify-center ${imageUrl ? 'cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all' : ''}`}
+                onClick={() => {
+                  if (imageUrl) {
+                    setZoomedImage({ url: imageUrl, name: itemName });
+                  }
+                }}
+                title={imageUrl ? "Click to zoom" : "No image"}
+              >
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    alt={info.row.original.item_name}
+                    alt={itemName}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement!.innerHTML = `
-                        <div class="w-full h-full flex items-center justify-center bg-background-300">
-                          <svg class="w-6 h-6 text-text-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                        </div>
-                      `;
+                      const target = e.currentTarget;
+                      target.style.display = "none";
+                      const parent = target.parentElement;
+                      if (parent) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'w-full h-full flex items-center justify-center';
+                        placeholder.innerHTML = '<svg class="w-6 h-6 text-text-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>';
+                        parent.appendChild(placeholder);
+                      }
                     }}
                   />
                 ) : (
-                  <Package className="w-6 h-6 text-text-500" />
+                  <Package className="w-6 h-6 text-text-500 dark:text-text-400" />
                 )}
               </div>
             </div>
@@ -182,9 +209,10 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
   });
 
   return (
-    <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg overflow-hidden shadow-sm">
-      {/* Table Container */}
-      <div className="overflow-x-auto">
+    <>
+      <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg overflow-hidden shadow-sm">
+        {/* Table Container */}
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-background-200 dark:divide-background-300">
           <thead className="bg-background-50 dark:bg-background-100">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -316,7 +344,48 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Image Zoom Modal - Rendered via Portal to avoid z-index/spacing issues */}
+      {zoomedImage && ReactDOM.createPortal(
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-75 p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full">
+            {/* Close button */}
+            <button
+              onClick={() => setZoomedImage(null)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              title="Close (ESC)"
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            {/* Image title */}
+            <div className="absolute -top-12 left-0 text-white font-medium text-lg">
+              {zoomedImage.name}
+            </div>
+
+            {/* Zoomed image */}
+            <div className="bg-white dark:bg-background-100 rounded-lg overflow-hidden shadow-2xl">
+              <img
+                src={zoomedImage.url}
+                alt={zoomedImage.name}
+                className="w-full h-full object-contain max-h-[85vh]"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            {/* Helper text */}
+            <div className="text-center mt-4 text-white text-sm">
+              Click outside or press ESC to close
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 };
 
