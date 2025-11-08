@@ -1,3 +1,5 @@
+// Need the option for custom categories in the future
+// Replaced axios with fetch in inventoryService for auth token handling, hope this shit doesn't break again
 import React, { useEffect, useState } from "react";
 import { Package } from "lucide-react";
 import {
@@ -33,6 +35,7 @@ const Inventory: React.FC = () => {
     threshold: "",
     barcode: "",
     expiry_date: "",
+    image: "",
   });
 
   // Handle input changes
@@ -41,6 +44,11 @@ const Inventory: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle image upload
+  const handleImageChange = (imageData: string) => {
+    setFormData((prev) => ({ ...prev, image: imageData }));
   };
 
   // Reset form data
@@ -52,6 +60,7 @@ const Inventory: React.FC = () => {
       threshold: "",
       barcode: "",
       expiry_date: "",
+      image: "",
     });
   };
 
@@ -78,6 +87,7 @@ const Inventory: React.FC = () => {
       threshold: item.threshold.toString(),
       barcode: item.barcode || "",
       expiry_date: item.expiry_date ? item.expiry_date.split("T")[0] : "",
+      image: item.image || "",
     });
     setModalType("edit");
   };
@@ -122,6 +132,7 @@ const Inventory: React.FC = () => {
       threshold: Number(formData.threshold) || 10,
       barcode: formData.barcode || "",
       expiry_date: formData.expiry_date || undefined,
+      image: formData.image || undefined,
     };
 
     try {
@@ -154,6 +165,7 @@ const Inventory: React.FC = () => {
       threshold: Number(formData.threshold) || 10,
       barcode: formData.barcode || "",
       expiry_date: formData.expiry_date || undefined,
+      image: formData.image || undefined,
     };
 
     try {
@@ -219,7 +231,7 @@ const Inventory: React.FC = () => {
           </div>
           <button
             onClick={openAddModal}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-4 py-2 bg-primary-900 hover:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
           >
             <Package className="w-4 h-4" />
             Add Item
@@ -246,6 +258,7 @@ const Inventory: React.FC = () => {
         onSubmit={handleAddItem}
         formData={formData}
         onInputChange={handleInputChange}
+        onImageChange={handleImageChange}
         isSubmitting={isSubmitting}
         categories={categories}
       />
@@ -256,6 +269,7 @@ const Inventory: React.FC = () => {
         onSubmit={handleEditItem}
         formData={formData}
         onInputChange={handleInputChange}
+        onImageChange={handleImageChange}
         isSubmitting={isSubmitting}
         categories={categories}
       />

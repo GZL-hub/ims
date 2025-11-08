@@ -24,8 +24,8 @@ const ManualEntryMode: React.FC<ManualEntryModeProps> = ({
   isSearching,
 }) => {
   return (
-    <div className="bg-background-50 rounded-lg border-2 border-background-200 overflow-hidden">
-      <div className="relative aspect-video bg-gradient-to-br from-background-100 to-background-200 flex items-center justify-center p-8">
+    <div className="bg-background-50 dark:bg-background-100 rounded-lg border-2 border-background-200 dark:border-background-300 overflow-hidden">
+      <div className="relative aspect-video bg-gradient-to-br from-background-100 to-background-200 dark:from-background-100 dark:to-background-200 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full mb-4">
@@ -42,19 +42,19 @@ const ManualEntryMode: React.FC<ManualEntryModeProps> = ({
                 value={manualInput}
                 onChange={(e) => onInputChange(e.target.value)}
                 placeholder="Enter barcode number..."
-                className="w-full px-4 py-3 pr-12 bg-white border-2 border-background-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary-500 dark:bg-background-950 focus:ring-2 focus:ring-primary-200 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white border-2 border-background-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary-500 dark:bg-background-50 dark:border-background-300 dark:text-text-900 dark:placeholder-text-500 focus:ring-2 focus:ring-primary-200 transition-all"
                 autoComplete="off"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 dark:hover:bg-primary-300 dark:bg-background-200 transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary-900 text-white rounded-md hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black transition-colors"
               >
                 <Search className="h-4 w-4" />
               </button>
 
               {/* Search Suggestions Dropdown */}
               {showSuggestions && manualInput.trim().length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border-2 border-primary-300 rounded-lg shadow-lg max-h-64 overflow-y-auto z-10">
+                <div className="absolute top-full left-0 right-0 bg-white dark:bg-background-50 border-2 border-primary-300 dark:border-primary-400 rounded-lg shadow-lg max-h-64 overflow-y-auto z-10">
                   {isSearching ? (
                     <div className="p-4 text-center text-text-600">
                       <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
@@ -94,7 +94,7 @@ const ManualEntryMode: React.FC<ManualEntryModeProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <div className="p-6 text-center dark:bg-background-950">
+                    <div className="p-6 text-center dark:bg-background-50">
                       <Package className="h-12 w-12 text-text-300 mx-auto mb-2" />
                       <p className="text-sm font-medium text-text-700">No items found</p>
                       <p className="text-xs text-text-500 mt-1">

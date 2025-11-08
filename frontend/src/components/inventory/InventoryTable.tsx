@@ -182,17 +182,17 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
   });
 
   return (
-    <div className="bg-background-50 border border-background-200 rounded-lg overflow-hidden shadow-sm">
+    <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg overflow-hidden shadow-sm">
       {/* Table Container */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-background-200">
-          <thead className="bg-background-100">
+        <table className="min-w-full divide-y divide-background-200 dark:divide-background-300">
+          <thead className="bg-background-50 dark:bg-background-100">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-6 py-3 text-center text-xs font-medium text-text-600 uppercase tracking-wider cursor-pointer select-none hover:bg-background-200 transition-colors"
+                    className="px-6 py-3 text-center text-xs font-medium text-text-600 dark:text-text-400 uppercase tracking-wider cursor-pointer select-none hover:bg-background-200 dark:hover:bg-background-200 transition-colors"
                     onClick={header.column.getToggleSortingHandler()}
                     style={{ width: header.column.getSize() }}
                   >
@@ -216,7 +216,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-background-200 bg-white dark:bg-background-800">
+          <tbody className="divide-y divide-background-200 dark:divide-background-300 bg-white dark:bg-background-50">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td
@@ -234,7 +234,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-background-50 transition-colors"
+                  className="hover:bg-background-50 dark:hover:bg-background-100 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-6 py-4">
@@ -251,9 +251,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
         </table>
       </div>
 
-      {/* Pagination Controls - Now inside the same container */}
+      {/* Pagination Controls */}
       {items.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-background-100 border-t border-background-200">
+        <div className="flex items-center justify-between px-4 py-3 bg-background-50 dark:bg-background-100 border-t border-background-200 dark:border-background-300">
           <div className="flex items-center gap-2">
             <span className="text-sm text-text-700">
               Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
@@ -269,14 +269,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
             <button
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
-              className="px-3 py-1 text-sm border border-background-300 rounded-md hover:bg-background-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm border border-background-300 dark:border-background-400 rounded-md hover:bg-background-100 dark:hover:bg-background-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               First
             </button>
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="px-3 py-1 text-sm border border-background-300 rounded-md hover:bg-background-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm border border-background-300 dark:border-background-400 rounded-md hover:bg-background-100 dark:hover:bg-background-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Previous
             </button>
@@ -287,14 +287,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="px-3 py-1 text-sm border border-background-300 rounded-md hover:bg-background-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm border border-background-300 dark:border-background-400 rounded-md hover:bg-background-100 dark:hover:bg-background-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
             <button
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
-              className="px-3 py-1 text-sm border border-background-300 rounded-md hover:bg-background-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm border border-background-300 dark:border-background-400 rounded-md hover:bg-background-100 dark:hover:bg-background-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Last
             </button>
@@ -305,7 +305,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
             <select
               value={table.getState().pagination.pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}
-              className="px-2 py-1 text-sm border border-background-300 rounded-md bg-white dark:bg-background-700 focus:ring-2 focus:ring-primary-500"
+              className="px-2 py-1 text-sm border border-background-300 dark:border-background-400 rounded-md bg-white dark:bg-background-50 focus:ring-2 focus:ring-primary-500"
             >
               {[5, 10, 20, 50].map((pageSize) => (
                 <option key={pageSize} value={pageSize}>

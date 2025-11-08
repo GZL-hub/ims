@@ -141,7 +141,7 @@ const BarcodeScanner: React.FC = () => {
             onClick={() => setScanMode('camera')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
               scanMode === 'camera'
-                ? 'bg-primary-600 text-white shadow-md'
+                ? 'bg-primary-900 text-white shadow-md'
                 : 'bg-background-100 text-text-700 hover:bg-background-200'
             }`}
           >
@@ -152,7 +152,7 @@ const BarcodeScanner: React.FC = () => {
             onClick={() => setScanMode('manual')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
               scanMode === 'manual'
-                ? 'bg-primary-600 text-white shadow-md'
+                ? 'bg-primary-900 text-white shadow-md'
                 : 'bg-background-100 text-text-700 hover:bg-background-200'
             }`}
           >
