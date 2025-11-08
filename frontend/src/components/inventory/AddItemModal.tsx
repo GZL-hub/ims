@@ -12,10 +12,10 @@ interface AddItemModalProps {
     threshold: string;
     barcode: string;
     expiry_date: string;
-    image: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onImageChange: (imageData: string) => void;
+  onImageChange: (file: File | null) => void;
+  imageFile: File | null;
   isSubmitting: boolean;
   categories: string[];
 }
@@ -27,6 +27,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   formData,
   onInputChange,
   onImageChange,
+  imageFile,
   isSubmitting,
   categories,
 }) => {
@@ -35,16 +36,12 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onImageChange(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      onImageChange(file);
     }
   };
 
   const removeImage = () => {
-    onImageChange("");
+    onImageChange(null);
   };
 
   return (
@@ -183,11 +180,11 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
               <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">
                 Item Image
               </label>
-              {formData.image ? (
+              {imageFile ? (
                 <div className="relative">
                   <div className="w-full h-48 rounded-lg overflow-hidden bg-background-100 dark:bg-background-100 border border-background-300 dark:border-background-300">
                     <img
-                      src={formData.image}
+                      src={URL.createObjectURL(imageFile)}
                       alt="Item preview"
                       className="w-full h-full object-contain"
                     />
@@ -208,7 +205,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
                     <p className="text-sm text-text-700 dark:text-text-300 font-medium mb-1">
                       Click to upload image
                     </p>
-                    <p className="text-xs text-text-500">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-text-500">PNG, JPG, GIF up to 5MB</p>
                   </div>
                   <input
                     type="file"

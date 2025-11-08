@@ -17,6 +17,9 @@ const MONGO_URI = process.env.MONGO_URI as string;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Authentication routes (public and protected)
 app.use("/api/auth", authRoutes);
 
