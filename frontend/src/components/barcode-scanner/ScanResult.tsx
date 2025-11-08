@@ -16,15 +16,15 @@ interface ScanResultProps {
 
 const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear }) => {
   return (
-    <div className="bg-background-50 rounded-lg border-2 border-primary-300 overflow-hidden animate-slideIn">
-      <div className="p-4 bg-primary-50 border-b border-primary-200 flex items-center justify-between">
+    <div className="bg-background-50 dark:bg-background-100 rounded-lg border-2 border-primary-300 dark:border-primary-400 overflow-hidden animate-slideIn">
+      <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 text-primary-600" />
-          <h3 className="font-semibold text-text-950">Scan Result</h3>
+          <CheckCircle className="h-5 w-5 text-primary-600 dark:text-primary-500" />
+          <h3 className="font-semibold text-text-950 dark:text-white">Scan Result</h3>
         </div>
         <button
           onClick={onClear}
-          className="p-1 hover:bg-primary-100 rounded transition-colors"
+          className="p-1 hover:bg-primary-100 dark:hover:bg-primary-800 rounded transition-colors"
         >
           <X className="h-4 w-4 text-text-600" />
         </button>
@@ -40,8 +40,8 @@ const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear }) => {
             </h4>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-text-600">Barcode:</span>
-                <span className="font-mono text-text-950 bg-background-200 px-2 py-0.5 rounded">
+                <span className="text-text-600 dark:text-text-400">Barcode:</span>
+                <span className="font-mono text-text-950 dark:text-text-50 bg-background-200 dark:bg-background-300 px-2 py-0.5 rounded">
                   {scan.barcode}
                 </span>
               </div>
@@ -66,11 +66,11 @@ const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-4 pt-4 border-t border-background-200 flex gap-2">
-          <button className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">
+        <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-300 flex gap-2">
+          <button className="flex-1 px-4 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black transition-colors font-medium">
             View Details
           </button>
-          <button className="flex-1 px-4 py-2 bg-background-200 text-text-950 rounded-lg hover:bg-background-300 transition-colors font-medium">
+          <button className="flex-1 px-4 py-2 bg-background-200 dark:bg-background-300 text-text-950 dark:text-text-50 rounded-lg hover:bg-background-300 dark:hover:bg-background-400 transition-colors font-medium">
             Edit Quantity
           </button>
         </div>

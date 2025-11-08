@@ -48,8 +48,8 @@ const Register: React.FC = () => {
         password: formData.password,
       });
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full block bg-primary-500 hover:bg-primary-400 focus:bg-primary-400 text-background-50 font-semibold rounded-lg px-4 py-3 mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block bg-primary-900 hover:bg-primary-800 focus:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:focus:bg-primary-500 dark:text-black font-semibold rounded-lg px-4 py-3 mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>

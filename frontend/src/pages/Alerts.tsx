@@ -10,7 +10,7 @@ const Alerts: React.FC = () => {
           <h1 className="text-3xl font-bold text-text-950">Alerts & Notifications</h1>
           <p className="text-text-600 mt-1">Manage automated stock and expiry alerts</p>
         </div>
-        <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+        <button className="px-4 py-2 bg-primary-900 hover:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black font-medium rounded-lg transition-colors flex items-center gap-2">
           <Settings className="w-4 h-4" />
           Alert Settings
         </button>

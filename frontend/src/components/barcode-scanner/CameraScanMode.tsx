@@ -8,8 +8,8 @@ interface CameraScanModeProps {
 
 const CameraScanMode: React.FC<CameraScanModeProps> = ({ isScanning, onStartScan }) => {
   return (
-    <div className="bg-background-50 rounded-lg border-2 border-background-200 overflow-hidden">
-      <div className="relative aspect-video bg-gradient-to-br from-background-100 to-background-200 flex items-center justify-center">
+    <div className="bg-background-50 dark:bg-background-100 rounded-lg border-2 border-background-200 dark:border-background-300 overflow-hidden">
+      <div className="relative aspect-video bg-gradient-to-br from-background-100 to-background-200 dark:from-background-100 dark:to-background-200 flex items-center justify-center">
         {/* Camera View Placeholder */}
         <div className="absolute inset-0 flex items-center justify-center">
           {isScanning ? (
@@ -40,14 +40,14 @@ const CameraScanMode: React.FC<CameraScanModeProps> = ({ isScanning, onStartScan
       </div>
 
       {/* Action Button */}
-      <div className="p-4 border-t border-background-200 bg-background-50">
+      <div className="p-4 border-t border-background-200 dark:border-background-300 bg-background-50 dark:bg-background-100">
         <button
           onClick={onStartScan}
           disabled={isScanning}
           className={`w-full py-3 rounded-lg font-semibold transition-all ${
             isScanning
-              ? 'bg-background-300 text-text-500 cursor-not-allowed'
-              : 'bg-primary-600 text-white hover:bg-primary-700 active:scale-95'
+              ? 'bg-background-300 dark:bg-background-200 text-text-500 cursor-not-allowed'
+              : 'bg-primary-900 text-white hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black active:scale-95'
           }`}
         >
           {isScanning ? 'Scanning...' : 'Start Scan'}

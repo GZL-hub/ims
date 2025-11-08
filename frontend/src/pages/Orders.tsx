@@ -10,7 +10,7 @@ const Orders: React.FC = () => {
           <h1 className="text-3xl font-bold text-text-950">Order Management</h1>
           <p className="text-text-600 mt-1">Track and manage all inventory orders</p>
         </div>
-        <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+        <button className="px-4 py-2 bg-primary-900 hover:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black font-medium rounded-lg transition-colors flex items-center gap-2">
           <ShoppingCart className="w-4 h-4" />
           New Order
         </button>
