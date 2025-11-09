@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Keyboard } from 'lucide-react';
+import { Camera, Keyboard, Package } from 'lucide-react';
 import CameraScanMode from '../components/barcode-scanner/CameraScanMode';
 import ManualEntryMode from '../components/barcode-scanner/ManualEntryMode';
 import ScanResult from '../components/barcode-scanner/ScanResult';
-import RecentScans from '../components/barcode-scanner/RecentScans';
 import { searchInventoryItems, getInventoryItemByBarcode } from '../services/inventoryService';
 import type { InventoryItem } from '../services/inventoryService';
 
@@ -13,12 +12,13 @@ interface ScanResultData {
   timestamp: Date;
   productName?: string;
   quantity?: number;
+  image?: string;
+  category?: string;
 }
 
 const BarcodeScanner: React.FC = () => {
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera');
   const [manualInput, setManualInput] = useState('');
-  const [recentScans, setRecentScans] = useState<ScanResultData[]>([]);
   const [currentScan, setCurrentScan] = useState<ScanResultData | null>(null);
   const [isScanning] = useState(false);
   const [suggestions, setSuggestions] = useState<InventoryItem[]>([]);
@@ -86,10 +86,11 @@ const BarcodeScanner: React.FC = () => {
           timestamp: new Date(),
           productName: item.item_name,
           quantity: item.quantity,
+          image: item.image,
+          category: item.category,
         };
 
         setCurrentScan(newScan);
-        setRecentScans(prev => [newScan, ...prev.slice(0, 9)]);
         setManualInput('');
         setSuggestions([]);
       } catch (error) {
@@ -107,10 +108,11 @@ const BarcodeScanner: React.FC = () => {
       timestamp: new Date(),
       productName: item.item_name,
       quantity: item.quantity,
+      image: item.image,
+      category: item.category,
     };
 
     setCurrentScan(newScan);
-    setRecentScans(prev => [newScan, ...prev.slice(0, 9)]);
     setManualInput('');
     setSuggestions([]);
     setShowSuggestions(false);
@@ -123,10 +125,6 @@ const BarcodeScanner: React.FC = () => {
 
   const clearCurrentScan = () => {
     setCurrentScan(null);
-  };
-
-  const clearHistory = () => {
-    setRecentScans([]);
   };
 
   return (
@@ -162,10 +160,9 @@ const BarcodeScanner: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Scanning Area */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Scanner Interface */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {/* Scanner Interface - 70% */}
+        <div className="lg:col-span-7">
           {scanMode === 'camera' ? (
             <CameraScanMode
               isScanning={isScanning}
@@ -183,23 +180,24 @@ const BarcodeScanner: React.FC = () => {
               isSearching={isSearching}
             />
           )}
+        </div>
 
-          {/* Current Scan Result */}
-          {currentScan && (
+        {/* Current Scan Result - 30% */}
+        <div className="lg:col-span-3">
+          {currentScan ? (
             <ScanResult
               scan={currentScan}
               onClear={clearCurrentScan}
             />
+          ) : (
+            <div className="bg-background-50 dark:bg-background-100 rounded-lg border-2 border-dashed border-background-300 dark:border-background-400 p-8 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+              <Package className="w-16 h-16 text-text-400 dark:text-text-500 mb-4" />
+              <p className="text-text-600 dark:text-text-400 font-medium">No scan result yet</p>
+              <p className="text-sm text-text-500 dark:text-text-500 mt-2">
+                Scan or enter a barcode to view item details
+              </p>
+            </div>
           )}
-        </div>
-
-        {/* Recent Scans Sidebar */}
-        <div className="lg:col-span-1">
-          <RecentScans
-            scans={recentScans}
-            onClearHistory={clearHistory}
-            onSelectScan={setCurrentScan}
-          />
         </div>
       </div>
     </div>
