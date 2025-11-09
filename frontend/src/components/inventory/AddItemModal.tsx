@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, X, Loader2, Upload, Image as ImageIcon } from "lucide-react";
+import { Package, X, Loader2, Upload } from "lucide-react";
 
 interface AddItemModalProps {
   isOpen: boolean;

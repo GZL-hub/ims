@@ -42,6 +42,17 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
 
   const columns = useMemo(
     () => [
+      // Inventory ID Column
+      columnHelper.accessor("_id", {
+        header: "ID",
+        cell: (info) => (
+          <div className="text-center text-text-700 dark:text-text-300 font-mono text-xs">
+            {info.getValue().slice(-6).toUpperCase()}
+          </div>
+        ),
+        size: 80,
+      }),
+
       // Image Column
       columnHelper.accessor("image", {
         header: "Image",
@@ -94,9 +105,23 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
       columnHelper.accessor("item_name", {
         header: "Item Name",
         cell: (info) => (
-          <div className="font-medium text-text-900 text-center">{info.getValue()}</div>
+          <div className="font-medium text-text-900 dark:text-white text-center">{info.getValue()}</div>
         ),
-        size: 200,
+        size: 180,
+      }),
+
+      // Barcode Column
+      columnHelper.accessor("barcode", {
+        header: "Barcode",
+        cell: (info) => {
+          const barcode = info.getValue();
+          return (
+            <div className="text-center text-text-700 dark:text-white font-mono text-sm">
+              {barcode || "-"}
+            </div>
+          );
+        },
+        size: 130,
       }),
 
       // Category Column
@@ -104,23 +129,66 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
         header: "Category",
         cell: (info) => (
           <div className="flex justify-center">
-            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-md text-xs font-medium">
+            <span className="px-2 py-1 bg-primary-100 dark:bg-white text-primary-700 dark:text-black rounded-md text-xs font-medium">
               {info.getValue()}
             </span>
           </div>
         ),
-        size: 150,
+        size: 120,
       }),
 
       // Quantity Column
       columnHelper.accessor("quantity", {
         header: "Quantity",
         cell: (info) => (
-          <div className="text-center font-semibold text-text-900">
+          <div className="text-center font-semibold text-text-900 dark:text-white">
             {info.getValue()}
           </div>
         ),
         size: 100,
+      }),
+
+      // Low Stock Threshold Column
+      columnHelper.accessor("threshold", {
+        header: "Low Stock Alert",
+        cell: (info) => {
+          const threshold = info.getValue();
+          return (
+            <div className="text-center text-text-700 dark:text-white">
+              {threshold || "-"}
+            </div>
+          );
+        },
+        size: 120,
+      }),
+
+      // Expiry Date Column
+      columnHelper.accessor("expiry_date", {
+        header: "Expiry Date",
+        cell: (info) => {
+          const expiryDate = info.getValue();
+          if (!expiryDate) {
+            return <div className="text-center text-text-500 dark:text-white">-</div>;
+          }
+
+          const date = new Date(expiryDate);
+          const today = new Date();
+          const daysUntilExpiry = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+          let colorClass = "text-text-700 dark:text-white";
+          if (daysUntilExpiry < 0) {
+            colorClass = "text-red-600 dark:text-red-400 font-semibold";
+          } else if (daysUntilExpiry < 30) {
+            colorClass = "text-yellow-600 dark:text-yellow-400 font-medium";
+          }
+
+          return (
+            <div className={`text-center text-sm ${colorClass}`}>
+              {date.toLocaleDateString()}
+            </div>
+          );
+        },
+        size: 120,
       }),
 
       // Status Column
@@ -129,11 +197,11 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
         cell: (info) => {
           const status = info.getValue();
           const statusColors = {
-            "In Stock": "text-green-600 bg-green-50",
-            "Low Stock": "text-yellow-600 bg-yellow-50",
-            "Expired": "text-red-600 bg-red-50",
+            "In Stock": "text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-300",
+            "Low Stock": "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300",
+            "Expired": "text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-300",
           };
-          const colorClass = statusColors[status as keyof typeof statusColors] || "text-text-600 bg-background-100";
+          const colorClass = statusColors[status as keyof typeof statusColors] || "text-text-600 bg-background-100 dark:bg-background-200 dark:text-text-300";
 
           return (
             <div className="text-center">
@@ -146,20 +214,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
         size: 120,
       }),
 
-      // Last Updated Column
-      columnHelper.accessor("last_updated", {
-        header: "Last Updated",
-        cell: (info) => {
-          const date = info.getValue();
-          return (
-            <div className="text-center text-text-700 text-sm">
-              {date ? new Date(date).toLocaleDateString() : "-"}
-            </div>
-          );
-        },
-        size: 130,
-      }),
-
       // Actions Column
       columnHelper.display({
         id: "actions",
@@ -168,14 +222,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
           <div className="flex justify-center gap-2">
             <button
               onClick={() => onEdit(info.row.original)}
-              className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+              className="p-2 text-primary-600 dark:text-white hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
               title="Edit item"
             >
               <Edit className="w-4 h-4" />
             </button>
             <button
               onClick={() => onDelete(info.row.original)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
               title="Delete item"
             >
               <Trash2 className="w-4 h-4" />

@@ -1,7 +1,6 @@
 // Need the option for custom categories in the future
 // Replaced axios with fetch in inventoryService for auth token handling, hope this shit doesn't break again
-import React, { useEffect, useState } from "react";
-import { Package } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   getAllInventoryItems,
   createInventoryItem,
@@ -13,7 +12,7 @@ import AddItemModal from "../components/inventory/AddItemModal";
 import EditItemModal from "../components/inventory/EditItemModal";
 import DeleteItemModal from "../components/inventory/DeleteItemModal";
 import SuccessToast from "../components/inventory/SuccessToast";
-import SummaryCards from "../components/inventory/SummaryCards";
+import SearchAndFilter from "../components/inventory/SearchAndFilter";
 import InventoryTable from "../components/inventory/InventoryTable";
 
 type ModalType = "add" | "edit" | "delete" | null;
@@ -26,6 +25,12 @@ const Inventory: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Filter and search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [sortBy, setSortBy] = useState("name-asc");
 
   // Track form values for required fields
   const [formData, setFormData] = useState({
@@ -196,6 +201,67 @@ const Inventory: React.FC = () => {
     "Other",
   ];
 
+  // Filter and sort items
+  const filteredItems = useMemo(() => {
+    let filtered = [...items];
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.item_name.toLowerCase().includes(query) ||
+          item.barcode?.toLowerCase().includes(query) ||
+          item.category.toLowerCase().includes(query) ||
+          item._id.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter((item) => item.category === selectedCategory);
+    }
+
+    // Apply status filter
+    if (selectedStatus) {
+      filtered = filtered.filter((item) => item.status === selectedStatus);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return a.item_name.localeCompare(b.item_name);
+        case "name-desc":
+          return b.item_name.localeCompare(a.item_name);
+        case "quantity-asc":
+          return a.quantity - b.quantity;
+        case "quantity-desc":
+          return b.quantity - a.quantity;
+        case "date-newest":
+          return new Date(b.date_added || 0).getTime() - new Date(a.date_added || 0).getTime();
+        case "date-oldest":
+          return new Date(a.date_added || 0).getTime() - new Date(b.date_added || 0).getTime();
+        case "expiry-soonest":
+          // Items with expiry dates come first, sorted by date
+          if (!a.expiry_date && !b.expiry_date) return 0;
+          if (!a.expiry_date) return 1;
+          if (!b.expiry_date) return -1;
+          return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
+        case "expiry-latest":
+          // Items with expiry dates come first, sorted by date (reversed)
+          if (!a.expiry_date && !b.expiry_date) return 0;
+          if (!a.expiry_date) return 1;
+          if (!b.expiry_date) return -1;
+          return new Date(b.expiry_date).getTime() - new Date(a.expiry_date).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [items, searchQuery, selectedCategory, selectedStatus, sortBy]);
+
   const handleDeleteConfirm = async () => {
     if (!selectedItem) return;
 
@@ -224,28 +290,23 @@ const Inventory: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-text-600">
-              Track and manage facility inventory and resources
-            </p>
-          </div>
-          <button
-            onClick={openAddModal}
-            className="px-4 py-2 bg-primary-900 hover:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
-          >
-            <Package className="w-4 h-4" />
-            Add Item
-          </button>
-        </div>
-
-      {/* Summary Cards */}
-      <SummaryCards items={items} />
+        {/* Search and Filter Section */}
+        <SearchAndFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          categories={categories}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onAddItem={openAddModal}
+        />
 
       {/* Inventory Table */}
       <InventoryTable
-        items={items}
+        items={filteredItems}
         onEdit={openEditModal}
         onDelete={openDeleteModal}
       />
