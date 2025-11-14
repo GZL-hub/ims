@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from 'react';
 
 interface TTSOptions{
     rate?: number; //0.1 to 10, default 1
