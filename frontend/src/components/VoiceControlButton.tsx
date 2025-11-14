@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Mic, MicOff, Volume, Volume2} from 'lucide-react';
+import {Mic, MicOff, Volume2} from 'lucide-react';
 import { useTTS } from '../hooks/useTTS';
 import { useVoiceCommands } from '../hooks/useVoiceCommands';
 import { useNavigate, useLocation } from 'react-router-dom';

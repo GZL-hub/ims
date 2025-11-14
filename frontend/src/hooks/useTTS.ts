@@ -7,7 +7,7 @@ interface TTSOptions{
     voice?: SpeechSynthesisVoice | null;
 }
 
-interface UseTTSReturn {
+interface useTTSReturn {
     speak: (test: string, options?: TTSOptions) => void;
     stop: () => void;
     pause: () => void;
@@ -18,7 +18,7 @@ interface UseTTSReturn {
     voices: SpeechSynthesisVoice[];
 }
 
-export const UseTTS = (): UseTTSReturn =>{
+export const useTTS = (): useTTSReturn =>{
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
