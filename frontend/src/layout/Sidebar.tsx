@@ -170,7 +170,7 @@ const Sidebar: React.FC = () => {
                   <NavItem href="/settings" icon={Settings}>
                     Settings
                   </NavItem>
-                  <NavItem href="#" icon={HelpCircle}>
+                  <NavItem href="/help" icon={HelpCircle}>
                     Help
                   </NavItem>
                 </div>
