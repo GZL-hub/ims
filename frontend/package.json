@@ -12,6 +12,8 @@
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.60",
     "@tanstack/react-table": "^8.21.3",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.13.1",
     "lucide-react": "^0.546.0",
     "react": "^19.1.1",
