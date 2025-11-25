@@ -1,6 +1,7 @@
 // Need the option for custom categories in the future
 // Replaced axios with fetch in inventoryService for auth token handling, hope this shit doesn't break again
 import React, { useEffect, useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import {
   getAllInventoryItems,
   createInventoryItem,
@@ -18,6 +19,7 @@ import InventoryTable from "../components/inventory/InventoryTable";
 type ModalType = "add" | "edit" | "delete" | null;
 
 const Inventory: React.FC = () => {
+  const location = useLocation();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState<ModalType>(null);
@@ -126,6 +128,39 @@ const Inventory: React.FC = () => {
 
     fetchInventory();
   }, []);
+
+  // Handle navigation state from barcode scanner
+  useEffect(() => {
+    const state = location.state as { searchBarcode?: string; editItem?: InventoryItem } | null;
+
+    if (state?.searchBarcode) {
+      // Set search query to the scanned barcode
+      setSearchQuery(state.searchBarcode);
+      // Clear the state to avoid re-triggering
+      window.history.replaceState({}, document.title);
+    }
+
+    if (state?.editItem && items.length > 0) {
+      // Find the item in the current items list
+      const itemToEdit = items.find(item => item._id === state.editItem._id);
+      if (itemToEdit) {
+        // Open edit modal directly without using the openEditModal function
+        setSelectedItem(itemToEdit);
+        setFormData({
+          item_name: itemToEdit.item_name,
+          category: itemToEdit.category,
+          quantity: itemToEdit.quantity.toString(),
+          threshold: itemToEdit.threshold.toString(),
+          barcode: itemToEdit.barcode || "",
+          expiry_date: itemToEdit.expiry_date ? itemToEdit.expiry_date.split("T")[0] : "",
+        });
+        setImageFile(null);
+        setModalType("edit");
+      }
+      // Clear the state to avoid re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, items]);
 
   const handleAddItem = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
