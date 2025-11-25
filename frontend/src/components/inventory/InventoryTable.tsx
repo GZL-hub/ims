@@ -14,6 +14,7 @@ import {
 import { Edit, Trash2, ChevronUp, ChevronDown, Package, X } from "lucide-react";
 import type { InventoryItem } from "../../services/inventoryService";
 import { getImageUrl } from "../../services/inventoryService";
+import BarcodeGenerator from "./BarcodeGenerator";
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -27,18 +28,24 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [zoomedImage, setZoomedImage] = React.useState<{ url: string; name: string } | null>(null);
+  const [selectedBarcode, setSelectedBarcode] = React.useState<{ value: string; itemName: string } | null>(null);
 
-  // Handle ESC key to close zoom modal
+  // Handle ESC key to close modals
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && zoomedImage) {
-        setZoomedImage(null);
+      if (e.key === 'Escape') {
+        if (zoomedImage) {
+          setZoomedImage(null);
+        }
+        if (selectedBarcode) {
+          setSelectedBarcode(null);
+        }
       }
     };
 
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [zoomedImage]);
+  }, [zoomedImage, selectedBarcode]);
 
   const columns = useMemo(
     () => [
@@ -115,13 +122,23 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
         header: "Barcode",
         cell: (info) => {
           const barcode = info.getValue();
+          const itemName = info.row.original.item_name;
           return (
-            <div className="text-center text-text-700 dark:text-white font-mono text-sm">
-              {barcode || "-"}
+            <div className="flex justify-center">
+              {barcode ? (
+                <button
+                  onClick={() => setSelectedBarcode({ value: barcode, itemName })}
+                  className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-white hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors border border-primary-200 dark:border-primary-700"
+                >
+                  Show
+                </button>
+              ) : (
+                <span className="text-text-500 dark:text-text-400 text-sm">-</span>
+              )}
             </div>
           );
         },
-        size: 130,
+        size: 100,
       }),
 
       // Category Column
@@ -429,6 +446,56 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
                 className="w-full h-full object-contain max-h-[85vh]"
                 onClick={(e) => e.stopPropagation()}
               />
+            </div>
+
+            {/* Helper text */}
+            <div className="text-center mt-4 text-white text-sm">
+              Click outside or press ESC to close
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Barcode Modal - Rendered via Portal to avoid z-index/spacing issues */}
+      {selectedBarcode && ReactDOM.createPortal(
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-75 p-4"
+          onClick={() => setSelectedBarcode(null)}
+        >
+          <div className="relative max-w-2xl w-full">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedBarcode(null)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              title="Close (ESC)"
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            {/* Barcode title */}
+            <div className="absolute -top-12 left-0 text-white font-medium text-lg">
+              {selectedBarcode.itemName} - Barcode
+            </div>
+
+            {/* Barcode display */}
+            <div
+              className="bg-white dark:bg-background-100 rounded-lg p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <BarcodeGenerator
+                  value={selectedBarcode.value}
+                  width={2.5}
+                  height={100}
+                  displayValue={true}
+                  className="text-text-900 dark:text-white"
+                />
+                <div className="text-center">
+                  <p className="text-sm text-text-600 dark:text-text-400 font-medium mb-1">Barcode Value:</p>
+                  <p className="text-lg font-mono text-text-900 dark:text-white">{selectedBarcode.value}</p>
+                </div>
+              </div>
             </div>
 
             {/* Helper text */}

@@ -15,9 +15,11 @@ interface ScanResultData {
 interface ScanResultProps {
   scan: ScanResultData;
   onClear: () => void;
+  onViewDetails?: () => void;
+  onEditQuantity?: () => void;
 }
 
-const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear }) => {
+const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear, onViewDetails, onEditQuantity }) => {
   const imageUrl = getImageUrl(scan.image);
 
   return (
@@ -97,14 +99,22 @@ const ScanResult: React.FC<ScanResultProps> = ({ scan, onClear }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-300 flex gap-2">
-          <button className="flex-1 px-4 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black transition-colors font-medium">
-            View Details
-          </button>
-          <button className="flex-1 px-4 py-2 bg-background-200 dark:bg-background-300 text-text-950 dark:text-text-50 rounded-lg hover:bg-background-300 dark:hover:bg-background-400 transition-colors font-medium">
-            Edit Quantity
-          </button>
-        </div>
+        {scan.productName !== 'Item Not Found' && (
+          <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-300 flex gap-2">
+            <button
+              onClick={onViewDetails}
+              className="flex-1 px-4 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black transition-colors font-medium"
+            >
+              View Details
+            </button>
+            <button
+              onClick={onEditQuantity}
+              className="flex-1 px-4 py-2 bg-background-200 dark:bg-background-300 text-text-950 dark:text-text-50 rounded-lg hover:bg-background-300 dark:hover:bg-background-400 transition-colors font-medium"
+            >
+              Edit Quantity
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

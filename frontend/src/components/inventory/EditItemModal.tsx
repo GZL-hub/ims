@@ -2,6 +2,7 @@ import React from "react";
 import { Package, X, Loader2, Upload } from "lucide-react";
 import { getImageUrl } from "../../services/inventoryService";
 import type { InventoryItem } from "../../services/inventoryService";
+import BarcodeGenerator from "./BarcodeGenerator";
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -188,6 +189,18 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                 className="w-full border border-background-300 dark:border-background-400 rounded-lg px-4 py-2.5 bg-white dark:bg-background-50 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 disabled={isSubmitting}
               />
+              {formData.barcode && (
+                <div className="mt-3 p-4 bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg">
+                  <p className="text-xs text-text-600 dark:text-text-400 mb-2 font-medium">Barcode Preview:</p>
+                  <BarcodeGenerator
+                    value={formData.barcode}
+                    width={2}
+                    height={60}
+                    displayValue={true}
+                    className="text-text-900 dark:text-white"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Image Upload */}

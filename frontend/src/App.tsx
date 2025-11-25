@@ -10,6 +10,7 @@ import Roles from './pages/Roles';
 import Inventory from './pages/Inventory';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
+import Help from './pages/Help';
 import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
 import Orders from './pages/Orders';
@@ -103,6 +104,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout><Settings /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <Layout><Help /></Layout>
                 </ProtectedRoute>
               }
             />
