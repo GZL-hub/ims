@@ -142,7 +142,7 @@ const Inventory: React.FC = () => {
 
     if (state?.editItem && items.length > 0) {
       // Find the item in the current items list
-      const itemToEdit = items.find(item => item._id === state.editItem._id);
+      const itemToEdit = items.find(item => item._id === state.editItem?._id);
       if (itemToEdit) {
         // Open edit modal directly without using the openEditModal function
         setSelectedItem(itemToEdit);
