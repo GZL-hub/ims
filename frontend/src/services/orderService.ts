@@ -9,8 +9,10 @@ export type OrderItem = {
 export type Order = {
   _id: string;
   customer: string;
+  email: string;       
+  phone?: string;  
   items: OrderItem[];
-  status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled';
+  status: 'Pending' | 'Completed' | 'Cancelled';
   date_created: string;
   last_updated?: string;
 };
@@ -27,6 +29,8 @@ type BackendOrderItem = {
 type BackendOrder = {
   _id: string;
   customer_name: string;
+  email: string;       
+  phone?: string;  
   items: BackendOrderItem[];
   status: string;
   date_created: string;
@@ -37,6 +41,8 @@ type BackendOrder = {
 const mapBackendOrder = (order: BackendOrder): Order => ({
   _id: order._id,
   customer: order.customer_name, // map customer_name → customer
+  email: order.email,
+  phone: order.phone,
   status: order.status as Order['status'],
   date_created: order.date_created,
   last_updated: order.last_updated,

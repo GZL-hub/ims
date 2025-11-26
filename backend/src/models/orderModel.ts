@@ -9,7 +9,7 @@ export interface IOrderItem {
 export interface IOrder extends Document {
   customer_name: string;
   items: IOrderItem[];
-  status: "pending" | "processing" | "completed" | "cancelled";
+  status: "Pending" | "Completed" | "Cancelled";
   date_created?: Date;
   last_updated?: Date;
 }
@@ -23,7 +23,7 @@ const OrderItemSchema = new Schema<IOrderItem>({
 const OrderSchema = new Schema<IOrder>({
   customer_name: { type: String, required: true },
   items: [OrderItemSchema],
-  status: { type: String, default: "pending" },
+  status: { type: String, default: "Pending" },
   date_created: { type: Date, default: Date.now },
   last_updated: { type: Date, default: Date.now },
 });
