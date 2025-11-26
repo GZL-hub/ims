@@ -49,13 +49,26 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
       header: "Items",
       cell: (info) => {
         const items = info.getValue();
+        if (!items || items.length === 0) return "No items";
+
+        // Show first 3 items, then "+N more" if many
+        const displayItems =
+            items.length <= 3
+                ? items.map((item: OrderType["items"][number]) => `${item.quantity} x ${item.itemName}`)
+                : [
+                    ...items
+                    .slice(0, 3)
+                    .map((item: OrderType["items"][number]) => `${item.quantity} x ${item.itemName}`),
+                    `+${items.length - 3} more`,
+                ];
+
         return (
           <div className="text-center text-sm text-text-700 dark:text-text-300">
-            {items.length} {items.length === 1 ? "item" : "items"}
+            {displayItems.join(", ")}
           </div>
         );
       },
-      size: 100,
+      size: 250,
     }),
     columnHelper.accessor("date_created", {
       header: "Date",

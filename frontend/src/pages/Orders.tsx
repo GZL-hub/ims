@@ -104,22 +104,23 @@ const Orders: React.FC = () => {
     const newOrder: OrderInput = {
       customer: formData.customer,
       status: "Pending",
-      items: formData.items
-        .filter(i => i.quantity > 0)
-        .map(i => ({ 
-          inventoryId: i.inventoryId, 
-          itemName: i.itemName,
-          quantity: i.quantity })), 
+      items: formData.items.filter(i => i.quantity > 0),
     };
+
+    console.log("Payload being sent to backend:", newOrder);
 
     try {
       const createdOrder = await createOrder(newOrder);
       setOrders(prev => [createdOrder, ...prev]);
       closeModal();
       showSuccessMessage("Order created successfully!");
-    } catch (err) {
-      console.error("Error creating order:", err);
-      alert("Failed to create order. Please try again.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error creating order:", err.message);
+      } else {
+        console.error("Unknown error creating order:", err);
+      }
+      alert("Failed to create order. Check console for details.");
     } finally {
       setIsSubmitting(false);
     }
