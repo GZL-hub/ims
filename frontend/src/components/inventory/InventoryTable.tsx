@@ -216,6 +216,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ items, onEdit, onDelete
           const statusColors = {
             "In Stock": "text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-300",
             "Low Stock": "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300",
+            "Out of Stock": "text-gray-600 bg-gray-50 dark:bg-gray-900/30 dark:text-gray-300",
             "Expired": "text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-300",
           };
           const colorClass = statusColors[status as keyof typeof statusColors] || "text-text-600 bg-background-100 dark:bg-background-200 dark:text-text-300";
