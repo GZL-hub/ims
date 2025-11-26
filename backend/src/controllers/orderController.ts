@@ -5,7 +5,7 @@ import Inventory from "../models/inventoryModel.js";
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { customer_name, items } = req.body;
+    const { customer_name, email, phone, items } = req.body;
 
     if (!customer_name || !items || !items.length) {
       return res.status(400).json({ message: "Customer name and items are required" });
@@ -25,7 +25,7 @@ export const createOrder = async (req: Request, res: Response) => {
       await inventoryItem.save();
     }
 
-    const order = new Order({ customer_name, items });
+    const order = new Order({ customer_name, email, phone, items });
     await order.save();
 
     res.status(201).json(order);

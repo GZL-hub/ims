@@ -88,11 +88,13 @@ export const getOrderById = async (id: string): Promise<Order> => {
 export const createOrder = async (order: OrderInput): Promise<Order> => {
   try {
     const payload = {
-      customer_name: order.customer, // backend expects customer_name
+      customer_name: order.customer, 
+      email: order.email,       
+      phone: order.phone,
       status: order.status,
       items: order.items.map((i) => ({
         inventoryId: i.inventoryId,
-        item_name: i.itemName, // backend expects item_name
+        item_name: i.itemName, 
         quantity: i.quantity,
       })),
     };

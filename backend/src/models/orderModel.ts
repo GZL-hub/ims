@@ -8,6 +8,8 @@ export interface IOrderItem {
 
 export interface IOrder extends Document {
   customer_name: string;
+  email: string;
+  phone?: string;
   items: IOrderItem[];
   status: "Pending" | "Completed" | "Cancelled";
   date_created?: Date;
@@ -22,6 +24,8 @@ const OrderItemSchema = new Schema<IOrderItem>({
 
 const OrderSchema = new Schema<IOrder>({
   customer_name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String },
   items: [OrderItemSchema],
   status: { type: String, default: "Pending" },
   date_created: { type: Date, default: Date.now },
