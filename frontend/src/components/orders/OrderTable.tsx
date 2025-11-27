@@ -94,6 +94,15 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
         ),
         size: 200,
         }),
+    columnHelper.accessor("organization", {
+        header: "Organization",
+        cell: (info) => (
+            <div className="text-center text-sm text-text-700 dark:text-text-300">
+            {info.getValue() || "-"}
+            </div>
+        ),
+        size: 180,
+    }),
     columnHelper.accessor("phone", {
         header: "Phone",
         cell: (info) => (
@@ -269,6 +278,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
             <h2 className="text-lg font-semibold text-text-900 dark:text-white mb-4">Order Details</h2>
             <p><strong>Customer:</strong> {expandedOrder.customer}</p>
             <p><strong>Email:</strong> {expandedOrder.email || "-"}</p>
+            <p><strong>Organization:</strong> {expandedOrder.organization || "-"}</p>
             <p><strong>Phone:</strong> {expandedOrder.phone || "-"}</p>
             <p><strong>Status:</strong> {expandedOrder.status}</p>
             <p><strong>Date:</strong> {new Date(expandedOrder.date_created).toLocaleString()}</p>

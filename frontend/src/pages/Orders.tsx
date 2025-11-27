@@ -37,11 +37,13 @@ const Orders: React.FC = () => {
   const [formData, setFormData] = useState<{
     customer: string;
     email: string;
+    organization: string;
     phone?: string;
     items: { inventoryId: string; itemName: string; quantity: number }[];
   }>({
     customer: "",
     email: "",
+    organization: "",
     phone: "",
     items: [],
   });
@@ -70,6 +72,7 @@ const Orders: React.FC = () => {
     setFormData({
       customer: "",
       email: "",
+      organization: "",
       phone: "",
       items: [],
     });
@@ -149,6 +152,7 @@ const Orders: React.FC = () => {
     const newOrder: OrderInput = {
       customer: formData.customer,
       email: formData.email,
+      organization: formData.organization,
       phone: formData.phone,
       status: "Pending",
       items: formData.items.filter(i => i.quantity > 0),

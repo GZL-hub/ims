@@ -8,6 +8,7 @@ interface AddOrderModalProps {
   formData: {
     customer: string;
     email: string;
+    organization: string;
     phone?: string;
     items: { inventoryId: string; itemName: string; quantity: number }[];
   };
@@ -102,6 +103,22 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
               required
               disabled={isSubmitting}
             />
+          </div>
+
+          {/* Customer Organization */}
+          <div>
+          <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">
+            Organization <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="organization"
+            value={formData.organization}
+            onChange={onInputChange}
+            placeholder="Enter organization name"
+            className="w-full border border-background-300 dark:border-background-400 rounded-lg px-4 py-2.5 bg-white dark:bg-background-50 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            disabled={isSubmitting}
+          />
           </div>
 
           {/* Customer Phone */}
