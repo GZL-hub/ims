@@ -118,6 +118,8 @@ const VoiceControlButton: React.FC = () => {
 
     const {isListening, startListening, stopListening, isSupported} = useVoiceCommands(commands);
 
+    console.log('VoiceControlButton - isSupported:', isSupported); // Debug log
+
     //read content on page
     const readCurrentPage = () => {
         const path = location.pathname;
@@ -168,19 +170,21 @@ const VoiceControlButton: React.FC = () => {
         }
     };
 
-    if(!isSupported){
-        return null //won't show button if browser doesn't support voice
-    }
-
+    // Always show button, but disable if not supported
     return(
         <>
             <button
                 onClick={handleClick}
-                className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center relative"
+                disabled={!isSupported}
+                className={`p-2 rounded-lg transition-colors flex items-center justify-center relative ${
+                    isSupported ? 'hover:bg-background-200' : 'opacity-50 cursor-not-allowed'
+                }`}
                 aria-label={
+                    !isSupported ? 'Voice control not supported' :
                     isSpeaking ? 'Stop speaking' : isListening ? 'Stop listening' : 'Start voice control'
                 }
                 title = {
+                    !isSupported ? 'Voice control not supported in this browser' :
                     isSpeaking? 'Stop speaking' : isListening? 'Listening...' : 'Voice Control'
                 }
             >

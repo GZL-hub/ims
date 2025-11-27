@@ -22,7 +22,7 @@ export const useTTS = (): useTTSReturn =>{
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-    const [isSupported] = useState(() => 'speechSynthesis' in Window);
+    const [isSupported] = useState(() => 'speechSynthesis' in window);
 
     //Load available voices
     useEffect(() => {
