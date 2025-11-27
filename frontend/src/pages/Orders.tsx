@@ -36,9 +36,13 @@ const Orders: React.FC = () => {
   // Form data for new order
   const [formData, setFormData] = useState<{
     customer: string;
+    email: string;
+    phone?: string;
     items: { inventoryId: string; itemName: string; quantity: number }[];
   }>({
     customer: "",
+    email: "",
+    phone: "",
     items: [],
   });
 
@@ -50,7 +54,6 @@ const Orders: React.FC = () => {
           getAllOrders(),
           getAllInventoryItems(),
         ]);
-        console.log("Fetched inventory:", inventoryData);
         setOrders(ordersData);
         setInventoryItems(inventoryData);
       } catch (err) {
@@ -66,11 +69,9 @@ const Orders: React.FC = () => {
   const openAddModal = () => {
     setFormData({
       customer: "",
-      items: inventoryItems.map((item) => ({
-        inventoryId: item._id,
-        itemName: item.item_name,
-        quantity: 0,
-      })),
+      email: "",
+      phone: "",
+      items: [],
     });
     setModalType("add");
   };
@@ -88,11 +89,48 @@ const Orders: React.FC = () => {
 
   // Handle item quantity change
   const handleItemQuantityChange = (inventoryId: string, quantity: number) => {
-    setFormData((prev) => ({
+    const itemInfo = inventoryItems.find(i => i._id === inventoryId);
+    if (!itemInfo) return;
+
+    if (quantity > itemInfo.quantity) {
+      showSuccessMessage(`Cannot exceed available stock (${itemInfo.quantity}) for ${itemInfo.item_name}.`);
+      quantity = itemInfo.quantity;
+    }
+
+    setFormData(prev => ({
       ...prev,
-      items: prev.items.map((item) =>
+      items: prev.items.map(item =>
         item.inventoryId === inventoryId ? { ...item, quantity } : item
       ),
+    }));
+  };
+
+  // Handle row item change
+  const handleRowItemChange = (rowIndex: number, newItemId: string) => {
+    const found = inventoryItems.find((i) => i._id === newItemId);
+    if (!found) return;
+    setFormData((prev) => {
+      const updated = [...prev.items];
+      updated[rowIndex] = { inventoryId: found._id, itemName: found.item_name, quantity: 1 };
+      return { ...prev, items: updated };
+    });
+  };
+
+  // Handle adding a new item row
+  const handleAddNewItem = (newItemId: string) => {
+    const found = inventoryItems.find((i) => i._id === newItemId);
+    if (!found) return;
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, { inventoryId: found._id, itemName: found.item_name, quantity: 1 }],
+    }));
+  };
+
+  // Handle removing an item row
+  const handleRemoveItem = (inventoryId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      items: prev.items.filter((i) => i.inventoryId !== inventoryId),
     }));
   };
 
@@ -101,13 +139,20 @@ const Orders: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const newOrder: OrderInput = {
       customer: formData.customer,
+      email: formData.email,
+      phone: formData.phone,
       status: "Pending",
       items: formData.items.filter(i => i.quantity > 0),
     };
-
-    console.log("Payload being sent to backend:", newOrder);
 
     try {
       const createdOrder = await createOrder(newOrder);
@@ -115,18 +160,13 @@ const Orders: React.FC = () => {
       closeModal();
       showSuccessMessage("Order created successfully!");
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error creating order:", err.message);
-      } else {
-        console.error("Unknown error creating order:", err);
-      }
+      console.error("Error creating order:", err);
       alert("Failed to create order. Check console for details.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Show success message
   const showSuccessMessage = (message: string) => {
     setSuccessMessage(message);
     setShowSuccess(true);
@@ -171,25 +211,21 @@ const Orders: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Search and Filter */}
         <SearchAndFilter
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          selectedCategory="" // not needed for orders
+          selectedCategory=""
           onCategoryChange={() => {}}
           selectedStatus={selectedStatus}
           onStatusChange={setSelectedStatus}
-          categories={[]} // not used
+          categories={[]}
           sortBy={sortBy}
           onSortChange={setSortBy}
           onAddItem={openAddModal}
         />
-
-        {/* Orders Table */}
         <OrderTable orders={filteredOrders} />
       </div>
 
-      {/* Modals */}
       <AddOrderModal
         isOpen={modalType === "add"}
         onClose={closeModal}
@@ -197,6 +233,9 @@ const Orders: React.FC = () => {
         formData={formData}
         onInputChange={handleInputChange}
         onItemQuantityChange={handleItemQuantityChange}
+        onRowItemChange={handleRowItemChange}
+        onAddNewItem={handleAddNewItem}
+        onRemoveItem={handleRemoveItem}
         isSubmitting={isSubmitting}
         inventoryItems={inventoryItems}
       />
