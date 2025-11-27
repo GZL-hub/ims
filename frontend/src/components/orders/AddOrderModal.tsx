@@ -6,7 +6,7 @@ interface AddOrderModalProps {
   onClose: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   formData: {
-    customer: string;
+    customer_name: string;
     email: string;
     organization: string;
     phone?: string;
@@ -78,8 +78,8 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
             </label>
             <input
               type="text"
-              name="customer"
-              value={formData.customer}
+              name="customer_name"
+              value={formData.customer_name}
               onChange={onInputChange}
               placeholder="Enter customer name"
               className="w-full border border-background-300 dark:border-background-400 rounded-lg px-4 py-2.5 bg-white dark:bg-background-50 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -221,11 +221,11 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
               type="submit"
               disabled={
                 isSubmitting || 
-                !formData.customer || 
+                !formData.customer_name || 
                 !formData.email ||
                 formData.items.every(i => i.quantity <= 0)}
               className={`px-5 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                isSubmitting || !formData.customer || formData.items.every(i => i.quantity <= 0)
+                isSubmitting || !formData.customer_name || formData.items.every(i => i.quantity <= 0)
                   ? "bg-background-300 dark:bg-background-200 text-text-500 cursor-not-allowed"
                   : "bg-primary-900 hover:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:text-black shadow-sm hover:shadow-md"
               }`}

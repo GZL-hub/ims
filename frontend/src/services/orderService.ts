@@ -8,7 +8,7 @@ export type OrderItem = {
 
 export type Order = {
   _id: string;
-  customer: string;
+  customer_name: string;
   email: string;    
   organization: string;   
   phone?: string;  
@@ -42,7 +42,7 @@ type BackendOrder = {
 /** Utility to map backend → frontend */
 const mapBackendOrder = (order: BackendOrder): Order => ({
   _id: order._id,
-  customer: order.customer_name, // map customer_name → customer
+  customer_name: order.customer_name, // map customer_name → customer_name
   email: order.email,
   organization: order.organization,
   phone: order.phone,
@@ -91,7 +91,7 @@ export const getOrderById = async (id: string): Promise<Order> => {
 export const createOrder = async (order: OrderInput): Promise<Order> => {
   try {
     const payload = {
-      customer_name: order.customer, 
+      customer_name: order.customer_name, 
       email: order.email,  
       organization: order.organization,
       phone: order.phone,
