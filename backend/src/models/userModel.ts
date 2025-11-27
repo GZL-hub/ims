@@ -19,6 +19,10 @@ export const RolePermissions = {
     "inventory:create",
     "inventory:update",
     "inventory:delete",
+    "orders:read", 
+    "orders:create", 
+    "orders:update", 
+    "orders:delete",
     "role:manage",
     "settings:manage",
   ],
@@ -28,8 +32,19 @@ export const RolePermissions = {
     "inventory:create",
     "inventory:update",
     "inventory:delete",
+    "orders:read", 
+    "orders:create", 
+    "orders:update", 
+    "orders:delete",
   ],
-  [UserRole.STAFF]: ["inventory:read", "inventory:create", "inventory:update"],
+  [UserRole.STAFF]: [
+    "inventory:read", 
+    "inventory:create", 
+    "inventory:update", 
+    "orders:read", 
+    "orders:create",
+    "orders:update",
+  ],
 };
 
 export interface IUser extends Document {

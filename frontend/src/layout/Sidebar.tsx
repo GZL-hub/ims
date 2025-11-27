@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import JapaneseLogo from '../components/JapaneseLogo';
+import Logo from '../components/Logo';
 import {
   LayoutDashboard,
   Shield,
@@ -83,10 +83,10 @@ const Sidebar: React.FC = () => {
             {!isCollapsed ? (
               <>
                 <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0">
-                  <JapaneseLogo className="text-primary-600 flex-shrink-0" size={32} />
+                  <Logo className="flex-shrink-0" size={32} />
                   <div className="min-w-0">
-                    <span className="text-lg font-bold text-text-950 block whitespace-nowrap">i-IMS</span>
-                    <span className="text-xs text-text-600 whitespace-nowrap">Inventory System</span>
+                    <span className="text-lg font-bold text-text-950 dark:text-white block whitespace-nowrap">i-IMS</span>
+                    <span className="text-xs text-text-600 dark:text-text-400 whitespace-nowrap">Inventory System</span>
                   </div>
                 </Link>
                 <button
@@ -170,7 +170,7 @@ const Sidebar: React.FC = () => {
                   <NavItem href="/settings" icon={Settings}>
                     Settings
                   </NavItem>
-                  <NavItem href="#" icon={HelpCircle}>
+                  <NavItem href="/help" icon={HelpCircle}>
                     Help
                   </NavItem>
                 </div>

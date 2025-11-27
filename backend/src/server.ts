@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,6 +18,9 @@ const MONGO_URI = process.env.MONGO_URI as string;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Authentication routes (public and protected)
 app.use("/api/auth", authRoutes);
 
@@ -25,6 +29,9 @@ app.use("/api/users", userRoutes);
 
 // Inventory routes
 app.use("/api/inventory", inventoryRoutes);
+
+// Order routes
+app.use("/api/orders", orderRoutes);
 
 // Connect to MongoDB
 mongoose 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import JapaneseLogo from '../components/JapaneseLogo';
+import Logo from '../components/Logo';
 import ShaderBackground from '../components/ShaderBackground';
 
 const Register: React.FC = () => {
@@ -48,8 +48,8 @@ const Register: React.FC = () => {
         password: formData.password,
       });
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -79,11 +79,11 @@ const Register: React.FC = () => {
       <div className="bg-background-50 w-full md:max-w-md lg:max-w-full md:mx-0 md:w-1/2 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center overflow-y-auto">
         <div className="w-full h-100 py-8">
           <div className="flex items-center gap-2">
-            <JapaneseLogo className="text-primary-600" size={32} />
-            <h1 className="text-xl font-bold text-text-900">i-IMS</h1>
+            <Logo size={32} />
+            <h1 className="text-xl font-bold text-text-900 dark:text-white">i-IMS</h1>
           </div>
 
-          <h1 className="text-xl md:text-2xl font-bold leading-tight mt-12 text-text-900">
+          <h1 className="text-xl md:text-2xl font-bold leading-tight mt-12 text-text-900 dark:text-white">
             Create your account
           </h1>
 
@@ -167,7 +167,7 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full block bg-primary-500 hover:bg-primary-400 focus:bg-primary-400 text-background-50 font-semibold rounded-lg px-4 py-3 mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block bg-primary-900 hover:bg-primary-800 focus:bg-primary-800 text-white dark:bg-primary-600 dark:hover:bg-primary-500 dark:focus:bg-primary-500 dark:text-black font-semibold rounded-lg px-4 py-3 mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>

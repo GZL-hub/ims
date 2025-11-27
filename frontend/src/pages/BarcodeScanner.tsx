@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Keyboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Camera, Keyboard, Package } from 'lucide-react';
 import CameraScanMode from '../components/barcode-scanner/CameraScanMode';
 import ManualEntryMode from '../components/barcode-scanner/ManualEntryMode';
 import ScanResult from '../components/barcode-scanner/ScanResult';
-import RecentScans from '../components/barcode-scanner/RecentScans';
 import { searchInventoryItems, getInventoryItemByBarcode } from '../services/inventoryService';
 import type { InventoryItem } from '../services/inventoryService';
 
@@ -13,14 +13,17 @@ interface ScanResultData {
   timestamp: Date;
   productName?: string;
   quantity?: number;
+  image?: string;
+  category?: string;
 }
 
 const BarcodeScanner: React.FC = () => {
+  const navigate = useNavigate();
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera');
   const [manualInput, setManualInput] = useState('');
-  const [recentScans, setRecentScans] = useState<ScanResultData[]>([]);
   const [currentScan, setCurrentScan] = useState<ScanResultData | null>(null);
-  const [isScanning] = useState(false);
+  const [scannedItem, setScannedItem] = useState<InventoryItem | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   const [suggestions, setSuggestions] = useState<InventoryItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -29,8 +32,12 @@ const BarcodeScanner: React.FC = () => {
 
   // Focus on input when switching to manual mode
   useEffect(() => {
-    if (scanMode === 'manual' && inputRef.current) {
-      inputRef.current.focus();
+    if (scanMode === 'manual') {
+      // Stop scanning when switching to manual mode
+      setIsScanning(false);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   }, [scanMode]);
 
@@ -86,10 +93,12 @@ const BarcodeScanner: React.FC = () => {
           timestamp: new Date(),
           productName: item.item_name,
           quantity: item.quantity,
+          image: item.image,
+          category: item.category,
         };
 
         setCurrentScan(newScan);
-        setRecentScans(prev => [newScan, ...prev.slice(0, 9)]);
+        setScannedItem(item);
         setManualInput('');
         setSuggestions([]);
       } catch (error) {
@@ -107,26 +116,77 @@ const BarcodeScanner: React.FC = () => {
       timestamp: new Date(),
       productName: item.item_name,
       quantity: item.quantity,
+      image: item.image,
+      category: item.category,
     };
 
     setCurrentScan(newScan);
-    setRecentScans(prev => [newScan, ...prev.slice(0, 9)]);
+    setScannedItem(item);
     setManualInput('');
     setSuggestions([]);
     setShowSuggestions(false);
   };
 
-  const handleCameraScan = () => {
-    // TODO: Implement camera scanning with actual barcode scanner library
-    alert('Camera scanning is not yet implemented. Please use Manual Entry mode.');
+  const handleViewDetails = () => {
+    if (currentScan) {
+      // Navigate to inventory page with barcode in search
+      navigate('/inventory', { state: { searchBarcode: currentScan.barcode } });
+    }
+  };
+
+  const handleEditQuantity = () => {
+    if (scannedItem) {
+      // Navigate to inventory page with item to edit
+      navigate('/inventory', { state: { editItem: scannedItem } });
+    }
+  };
+
+  const handleStartScan = () => {
+    setIsScanning(true);
+  };
+
+  const handleStopScan = () => {
+    setIsScanning(false);
+  };
+
+  const handleCameraScanSuccess = async (barcode: string) => {
+    console.log('Scanned barcode:', barcode);
+
+    try {
+      // Try to fetch item by exact barcode match
+      const item = await getInventoryItemByBarcode(barcode);
+
+      const newScan: ScanResultData = {
+        id: Date.now().toString(),
+        barcode: item.barcode,
+        timestamp: new Date(),
+        productName: item.item_name,
+        quantity: item.quantity,
+        image: item.image,
+        category: item.category,
+      };
+
+      setCurrentScan(newScan);
+      setScannedItem(item);
+    } catch (error) {
+      console.error('Error fetching item:', error);
+      // Show "not found" message with the barcode
+      const newScan: ScanResultData = {
+        id: Date.now().toString(),
+        barcode: barcode,
+        timestamp: new Date(),
+        productName: 'Item Not Found',
+        quantity: 0,
+      };
+      setCurrentScan(newScan);
+      setScannedItem(null);
+      alert(`Barcode "${barcode}" was scanned but no matching item was found in inventory.`);
+    }
   };
 
   const clearCurrentScan = () => {
     setCurrentScan(null);
-  };
-
-  const clearHistory = () => {
-    setRecentScans([]);
+    setScannedItem(null);
   };
 
   return (
@@ -141,7 +201,7 @@ const BarcodeScanner: React.FC = () => {
             onClick={() => setScanMode('camera')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
               scanMode === 'camera'
-                ? 'bg-primary-600 text-white shadow-md'
+                ? 'bg-primary-900 text-white shadow-md'
                 : 'bg-background-100 text-text-700 hover:bg-background-200'
             }`}
           >
@@ -152,7 +212,7 @@ const BarcodeScanner: React.FC = () => {
             onClick={() => setScanMode('manual')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
               scanMode === 'manual'
-                ? 'bg-primary-600 text-white shadow-md'
+                ? 'bg-primary-900 text-white shadow-md'
                 : 'bg-background-100 text-text-700 hover:bg-background-200'
             }`}
           >
@@ -162,14 +222,15 @@ const BarcodeScanner: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Scanning Area */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Scanner Interface */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {/* Scanner Interface - 70% */}
+        <div className="lg:col-span-7">
           {scanMode === 'camera' ? (
             <CameraScanMode
               isScanning={isScanning}
-              onStartScan={handleCameraScan}
+              onStartScan={handleStartScan}
+              onStopScan={handleStopScan}
+              onScanSuccess={handleCameraScanSuccess}
             />
           ) : (
             <ManualEntryMode
@@ -183,23 +244,26 @@ const BarcodeScanner: React.FC = () => {
               isSearching={isSearching}
             />
           )}
+        </div>
 
-          {/* Current Scan Result */}
-          {currentScan && (
+        {/* Current Scan Result - 30% */}
+        <div className="lg:col-span-3">
+          {currentScan ? (
             <ScanResult
               scan={currentScan}
               onClear={clearCurrentScan}
+              onViewDetails={handleViewDetails}
+              onEditQuantity={handleEditQuantity}
             />
+          ) : (
+            <div className="bg-background-50 dark:bg-background-100 rounded-lg border-2 border-dashed border-background-300 dark:border-background-400 p-8 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+              <Package className="w-16 h-16 text-text-400 dark:text-text-500 mb-4" />
+              <p className="text-text-600 dark:text-text-400 font-medium">No scan result yet</p>
+              <p className="text-sm text-text-500 dark:text-text-500 mt-2">
+                Scan or enter a barcode to view item details
+              </p>
+            </div>
           )}
-        </div>
-
-        {/* Recent Scans Sidebar */}
-        <div className="lg:col-span-1">
-          <RecentScans
-            scans={recentScans}
-            onClearHistory={clearHistory}
-            onSelectScan={setCurrentScan}
-          />
         </div>
       </div>
     </div>

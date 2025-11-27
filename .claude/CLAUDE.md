@@ -140,21 +140,26 @@ npm start          # Run compiled production server
 - `PATCH /:id/activate` - Activate user (requires `admin` role)
 
 *Inventory Routes* (`/api/inventory`):
-- All routes require authentication
-- GET routes require `inventory:read` permission
-- POST routes require `inventory:create` permission
-- PUT routes require `inventory:update` permission
-- DELETE routes require `inventory:delete` permission
+- `GET /` - Get all inventory items (requires `inventory:read`)
+- `GET /search` - Search items by barcode/name (requires `inventory:read`)
+- `GET /barcode/:barcode` - Get item by barcode (requires `inventory:read`)
+- `POST /` - Create new item with optional image upload (requires `inventory:create`)
+- `PUT /:id` - Update item with optional image replacement (requires `inventory:update`)
+- `DELETE /:id` - Delete item and associated image (requires `inventory:delete`)
+
+*Static File Serving*:
+- `GET /uploads/items/:filename` - Serve uploaded inventory item images (public access)
 
 **Middleware**:
 - `authenticate` - Verifies JWT access token and attaches user to request
 - `requireRole(...roles)` - Ensures user has one of the specified roles
 - `requirePermission(...permissions)` - Ensures user has required permissions
 - `optionalAuth` - Attaches user if valid token exists, but doesn't block request
+- `upload` - Multer middleware for handling file uploads (single image field)
 
 **Models**:
 - `User` - User model with password hashing, role, permissions, and refresh token
-- `Inventory` - Inventory item model
+- `Inventory` - Inventory item model with optional image path field (stores file path, not base64)
 
 **Security Features**:
 - Password validation (minimum 6 characters)
@@ -206,11 +211,22 @@ All API calls should use the `api` utility from `apiClient.ts`:
 // GET request
 const response = await api.get('/inventory');
 
-// POST request
+// POST request (JSON)
 const response = await api.post('/inventory', itemData);
 
-// PUT request
-const response = await api.put('/inventory/123', updatedData);
+// POST request (FormData for file uploads)
+const formData = new FormData();
+formData.append('item_name', 'Laptop');
+formData.append('category', 'Electronics');
+formData.append('quantity', '10');
+formData.append('image', fileObject); // File object from input
+const response = await api.post('/inventory', formData);
+
+// PUT request (FormData for updating with new image)
+const formData = new FormData();
+formData.append('item_name', 'Updated Laptop');
+formData.append('image', newFileObject); // Replaces old image
+const response = await api.put('/inventory/123', formData);
 
 // DELETE request
 const response = await api.delete('/inventory/123');
@@ -218,6 +234,29 @@ const response = await api.delete('/inventory/123');
 // Public endpoint (no auth)
 const response = await api.get('/public', { requiresAuth: false });
 ```
+
+### File Upload System
+
+**Backend (Local Filesystem Storage)**:
+- Files stored in `backend/uploads/items/` directory
+- Multer middleware handles multipart/form-data
+- File validation: Images only (JPEG, PNG, GIF, WebP), max 5MB
+- Unique filenames: `image-{timestamp}-{random}.{ext}`
+- Automatic cleanup: Old images deleted on update/delete
+- Static serving: Express serves files from `/uploads` route
+
+**Frontend (FormData Submission)**:
+- File input captures File objects (not base64)
+- FormData used for create/update requests
+- `apiClient` automatically detects FormData and skips `Content-Type` header
+- Image preview: `URL.createObjectURL(file)` for new uploads
+- Display images: `getImageUrl(path)` constructs full URL from stored path
+- Inventory table: Click-to-zoom feature with React Portal modal
+
+**Important Notes**:
+- Database stores only file **path** (e.g., `"uploads/items/image-123.jpg"`), not the file itself
+- `.gitignore` in uploads directory prevents user images from being committed
+- No GridFS needed - local storage is simpler and more efficient for product images
 
 ### Environment Variables
 **Backend** (`.env`):
@@ -238,20 +277,29 @@ REFRESH_TOKEN_SECRET=dev-refresh-token-secret-key-456
 
 ### Backend
 - `src/models/userModel.ts` - User schema with roles, permissions, password hashing
+- `src/models/inventoryModel.ts` - Inventory schema with image path field
 - `src/utils/jwtUtils.ts` - JWT token generation and verification
 - `src/middleware/authMiddleware.ts` - Authentication and authorization middleware
+- `src/middleware/uploadMiddleware.ts` - Multer file upload configuration
 - `src/controllers/authController.ts` - Authentication business logic
 - `src/controllers/userController.ts` - User management business logic
+- `src/controllers/inventoryController.ts` - Inventory CRUD with file upload handling
 - `src/routes/authRoutes.ts` - Authentication endpoints
 - `src/routes/userRoutes.ts` - User management endpoints
-- `src/routes/inventoryRoutes.ts` - Protected inventory endpoints
+- `src/routes/inventoryRoutes.ts` - Protected inventory endpoints with upload middleware
+- `uploads/items/` - Directory for uploaded inventory item images (.gitignored)
 - `AUTH_API.md` - Complete API documentation
 
 ### Frontend
 - `src/contexts/AuthContext.tsx` - Authentication state management
 - `src/services/authService.ts` - Authentication API calls
-- `src/utils/apiClient.ts` - Authenticated HTTP client with auto-refresh
+- `src/services/inventoryService.ts` - Inventory API calls with FormData support
+- `src/utils/apiClient.ts` - Authenticated HTTP client with FormData/JSON auto-detection
 - `src/components/ProtectedRoute.tsx` - Route guard component
+- `src/components/inventory/InventoryTable.tsx` - Inventory table with image zoom modal
+- `src/components/inventory/AddItemModal.tsx` - Add item modal with file upload
+- `src/components/inventory/EditItemModal.tsx` - Edit item modal with image replacement
+- `src/pages/Inventory.tsx` - Inventory management page
 - `src/pages/Login.tsx` - Login page with ShaderBackground
 - `src/pages/Register.tsx` - Registration page with ShaderBackground
 - `src/layout/Header.tsx` - Header with user profile and logout

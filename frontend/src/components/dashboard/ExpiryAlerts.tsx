@@ -55,24 +55,24 @@ const ExpiryAlerts: React.FC = () => {
     switch (severity) {
       case 'critical':
         return {
-          bg: 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-300',
-          badge: 'bg-red-500',
-          icon: <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-700" />,
-          text: 'text-red-700 dark:text-white',
+          bg: 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700',
+          badge: 'bg-red-500 dark:bg-red-600',
+          icon: <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-100" />,
+          text: 'text-red-700 dark:text-red-200',
         };
       case 'warning':
         return {
-          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-400',
-          badge: 'bg-yellow-500',
-          icon: <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-700" />,
-          text: 'text-yellow-700 dark:text-white',
+          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-700',
+          badge: 'bg-yellow-500 dark:bg-yellow-600',
+          icon: <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-100" />,
+          text: 'text-yellow-700 dark:text-yellow-200',
         };
       case 'low-stock':
         return {
-          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-300',
-          badge: 'bg-yellow-500',
-          icon: <TrendingDown className="w-4 h-4 text-yellow-600 dark:text-yellow-700" />,
-          text: 'text-yellow-700 dark:text-white',
+          bg: 'bg-yellow-50 dark:bg-yellow-700 border-yellow-200 dark:border-yellow-700',
+          badge: 'bg-yellow-500 dark:bg-yellow-600',
+          icon: <TrendingDown className="w-4 h-4 text-yellow-600 dark:text-yellow-100" />,
+          text: 'text-yellow-700 dark:text-yellow-200',
         };
     }
   };
@@ -92,10 +92,10 @@ const ExpiryAlerts: React.FC = () => {
     <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-700" />
-          <h2 className="text-xl font-semibold text-text-950">Stock & Expiry Alerts</h2>
+          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <h2 className="text-xl font-semibold text-text-950 dark:text-white">Stock & Expiry Alerts</h2>
         </div>
-        <span className="px-3 py-1 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-800 text-sm font-semibold rounded-full">
+        <span className="px-3 py-1 bg-red-100 dark:bg-red-800 text-red-700 dark:text-white text-sm font-semibold rounded-full">
           {alerts.length} Alerts
         </span>
       </div>
@@ -115,24 +115,24 @@ const ExpiryAlerts: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-text-950 font-semibold text-sm">{alert.itemName}</h3>
+                      <h3 className="text-text-950 dark:text-white font-semibold text-sm">{alert.itemName}</h3>
                       <span className={`px-2 py-0.5 ${styles.badge} text-white text-xs rounded-full font-medium`}>
                         {getSeverityLabel(alert.severity)}
                       </span>
                     </div>
-                    <p className="text-text-600 dark:text-text-700 text-xs mb-2">SKU: {alert.sku}</p>
+                    <p className="text-text-600 dark:text-gray-300 text-xs mb-2">SKU: {alert.sku}</p>
                     <div className="flex items-center gap-4 text-xs">
                       <div>
-                        <span className="text-text-500 dark:text-text-600">Quantity:</span>
-                        <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600 dark:text-red-700' : 'text-text-700 dark:text-text-800'}`}>
+                        <span className="text-text-500 dark:text-gray-300">Quantity:</span>
+                        <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600 dark:text-red-300' : 'text-text-700 dark:text-white'}`}>
                           {alert.quantity} units
                         </span>
                       </div>
                       {alert.severity !== 'low-stock' && (
                         <>
                           <div>
-                            <span className="text-text-500 dark:text-text-600">Expires:</span>
-                            <span className="ml-1 font-semibold text-text-700 dark:text-text-800">{alert.expiryDate}</span>
+                            <span className="text-text-500 dark:text-gray-300">Expires:</span>
+                            <span className="ml-1 font-semibold text-text-700 dark:text-white">{alert.expiryDate}</span>
                           </div>
                           <div>
                             <span className={`font-semibold ${styles.text}`}>
@@ -144,7 +144,7 @@ const ExpiryAlerts: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <button className="text-primary-600 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-800 text-xs font-medium flex-shrink-0">
+                <button className="text-primary-600 dark:text-white hover:text-primary-700 dark:hover:text-gray-200 text-xs font-medium flex-shrink-0">
                   Action
                 </button>
               </div>
@@ -153,8 +153,8 @@ const ExpiryAlerts: React.FC = () => {
         })}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-500">
-        <button className="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-300 text-white font-medium rounded-lg transition-colors text-sm">
+      <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-300">
+        <button className="w-full py-2 px-4 bg-primary-900 hover:bg-primary-800 dark:bg-primary-600 dark:hover:bg-primary-500 text-white dark:text-black font-medium rounded-lg transition-colors text-sm">
           View All Alerts
         </button>
       </div>

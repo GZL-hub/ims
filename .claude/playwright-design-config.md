@@ -32,6 +32,13 @@ Test all custom Tailwind colors in both light and dark modes:
 - `secondary-*` (50-950)
 - `accent-*` (50-950)
 
+### 6. Image Upload & Display Features
+- **File Upload UI**: Test drag-and-drop and click-to-upload areas
+- **Image Preview**: Verify thumbnail generation and display
+- **Image Zoom Modal**: Test click-to-zoom functionality with React Portal
+- **Inventory Table Images**: Validate 48x48px thumbnails with hover effects
+- **Modal Image Display**: Check full-size image rendering in modals
+
 ## Recommended Playwright Commands
 
 ### Navigate to Frontend
@@ -75,26 +82,59 @@ Verify ARIA labels
 
 1. Start the frontend dev server
 2. Navigate to the application using Playwright MCP
-3. Take baseline screenshots of all routes (/, /roles, /inventory, /users, /settings)
+3. Take baseline screenshots of all routes (/, /inventory, /alerts, /users, /settings)
 4. Toggle to dark theme
 5. Take dark mode screenshots for comparison
 6. Test responsive layouts at different viewports
 7. Verify interactive elements (buttons, navigation, forms)
 
+## Image Upload Feature Test Workflow
+
+1. Navigate to `/inventory` page
+2. Click "Add Item" button to open modal
+3. Test image upload area:
+   - Verify upload UI styling (dashed border, upload icon)
+   - Take screenshot of empty upload state
+4. Click file upload area (simulate file selection)
+5. Verify image preview appears with remove button
+6. Take screenshot of image preview state
+7. Submit form and verify item creation
+8. In inventory table:
+   - Verify 48x48px thumbnail appears
+   - Hover over image to see ring effect
+   - Take screenshot of thumbnail
+9. Click thumbnail to open zoom modal
+10. Verify fullscreen image display with:
+    - Dark overlay (75% opacity)
+    - Close button in top right
+    - Item name at top
+    - "Click outside or press ESC" helper text
+11. Take screenshot of zoom modal
+12. Test closing: click outside, press ESC, click X button
+13. Test Edit functionality with image replacement
+14. Verify old image is replaced in both preview and table
+
 ## Key Pages to Test
 
 - `/` - Dashboard
-- `/roles` - Roles management
-- `/inventory` - Inventory management
+- `/inventory` - Inventory management with image upload/zoom features
+- `/barcode-scanner` - Barcode scanner with image display
 - `/users` - User management
+- `/alerts` - Stock and expiry alerts
+- `/orders` - Orders management
+- `/reports` - Reports
 - `/settings` - Settings
 
 ## Design System Elements
 
 Focus on these UI components when testing:
 - Navigation links and active states
-- Button styles and hover effects
+- Button styles (including dark mode: white background, black text)
 - Form inputs and validation states
 - Card components and shadows
-- Modal dialogs (if implemented)
+- Modal dialogs (Add/Edit/Delete Item, Image Zoom)
+- Image upload areas with drag-and-drop styling
+- Image thumbnails with hover ring effects
+- Fullscreen image zoom overlay (75% opacity, ESC to close)
 - Loading states and animations
+- React Portal modals (proper z-index and positioning)

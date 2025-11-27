@@ -39,12 +39,12 @@ const ShaderBackground: React.FC<ShaderBackgroundProps> = ({ children }) => {
       {/* Background Shaders - Using theme colors */}
       <MeshGradient
         className="absolute inset-0 w-full h-full"
-        colors={['#01213dff', '#3b84c4', '#042138ff', '#234f76', '#c8e6faff']}
+        colors={["#000000", "#8b5cf6", "#ffffff", "#1e1b4b", "#4c1d95"]}
         speed={0.3}
       />
       <MeshGradient
         className="absolute inset-0 w-full h-full opacity-50"
-        colors={['#234f76', '#5b9fd7', '#4e80afff', '#132e46ff']}
+        colors={["#000000", "#ffffff", "#8b5cf6", "#000000"]}
         speed={0.2}
       />
 

@@ -1,65 +1,247 @@
-import React from 'react';
-import OrderLog from '../components/dashboard/OrderLog';
-import { ShoppingCart, CheckCircle, Clock, Package } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  getAllInventoryItems,
+  type InventoryItem,
+} from "../services/inventoryService";
+import {
+  getAllOrders,
+  createOrder,
+  type Order as OrderType,
+  type OrderInput, 
+} from "../services/orderService"; 
+import AddOrderModal from "../components/orders/AddOrderModal";
+import SuccessToast from "../components/inventory/SuccessToast";
+import SearchAndFilter from "../components/inventory/SearchAndFilter";
+import OrderTable from "../components/orders/OrderTable";
+
+type ModalType = "add" | null;
 
 const Orders: React.FC = () => {
+  // State
+  const [orders, setOrders] = useState<OrderType[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [modalType, setModalType] = useState<ModalType>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Search and filter
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [sortBy, setSortBy] = useState("date-newest");
+
+  // Form data for new order
+  const [formData, setFormData] = useState<{
+    customer: string;
+    email: string;
+    phone?: string;
+    items: { inventoryId: string; itemName: string; quantity: number }[];
+  }>({
+    customer: "",
+    email: "",
+    phone: "",
+    items: [],
+  });
+
+  // Fetch orders and inventory
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersData, inventoryData] = await Promise.all([
+          getAllOrders(),
+          getAllInventoryItems(),
+        ]);
+        setOrders(ordersData);
+        setInventoryItems(inventoryData);
+      } catch (err) {
+        console.error("Error fetching orders or inventory:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Open modal
+  const openAddModal = () => {
+    setFormData({
+      customer: "",
+      email: "",
+      phone: "",
+      items: [],
+    });
+    setModalType("add");
+  };
+
+  // Close modal
+  const closeModal = () => setModalType(null);
+
+  // Handle input changes
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle item quantity change
+  const handleItemQuantityChange = (inventoryId: string, quantity: number) => {
+    const itemInfo = inventoryItems.find(i => i._id === inventoryId);
+    if (!itemInfo) return;
+
+    if (quantity > itemInfo.quantity) {
+      showSuccessMessage(`Cannot exceed available stock (${itemInfo.quantity}) for ${itemInfo.item_name}.`);
+      quantity = itemInfo.quantity;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map(item =>
+        item.inventoryId === inventoryId ? { ...item, quantity } : item
+      ),
+    }));
+  };
+
+  // Handle row item change
+  const handleRowItemChange = (rowIndex: number, newItemId: string) => {
+    const found = inventoryItems.find((i) => i._id === newItemId);
+    if (!found) return;
+    setFormData((prev) => {
+      const updated = [...prev.items];
+      updated[rowIndex] = { inventoryId: found._id, itemName: found.item_name, quantity: 1 };
+      return { ...prev, items: updated };
+    });
+  };
+
+  // Handle adding a new item row
+  const handleAddNewItem = (newItemId: string) => {
+    const found = inventoryItems.find((i) => i._id === newItemId);
+    if (!found) return;
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, { inventoryId: found._id, itemName: found.item_name, quantity: 1 }],
+    }));
+  };
+
+  // Handle removing an item row
+  const handleRemoveItem = (inventoryId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      items: prev.items.filter((i) => i.inventoryId !== inventoryId),
+    }));
+  };
+
+  // Submit new order
+  const handleAddOrder = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const newOrder: OrderInput = {
+      customer: formData.customer,
+      email: formData.email,
+      phone: formData.phone,
+      status: "Pending",
+      items: formData.items.filter(i => i.quantity > 0),
+    };
+
+    try {
+      const createdOrder = await createOrder(newOrder);
+      setOrders(prev => [createdOrder, ...prev]);
+      closeModal();
+      showSuccessMessage("Order created successfully!");
+    } catch (err: unknown) {
+      console.error("Error creating order:", err);
+      alert("Failed to create order. Check console for details.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const showSuccessMessage = (message: string) => {
+    setSuccessMessage(message);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  // Filter and sort orders
+  const filteredOrders = useMemo(() => {
+    let filtered = [...orders];
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (order) =>
+          order._id.toLowerCase().includes(q) ||
+          order.customer.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedStatus) {
+      filtered = filtered.filter((order) => order.status === selectedStatus);
+    }
+
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "date-newest":
+          return new Date(b.date_created).getTime() - new Date(a.date_created).getTime();
+        case "date-oldest":
+          return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [orders, searchQuery, selectedStatus, sortBy]);
+
+  if (loading) {
+    return <p className="text-text-600">Loading orders...</p>;
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text-950">Order Management</h1>
-          <p className="text-text-600 mt-1">Track and manage all inventory orders</p>
-        </div>
-        <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
-          <ShoppingCart className="w-4 h-4" />
-          New Order
-        </button>
+    <>
+      <div className="space-y-6">
+        <SearchAndFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory=""
+          onCategoryChange={() => {}}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          categories={[]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onAddItem={openAddModal}
+        />
+        <OrderTable orders={filteredOrders} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-background-50 border border-background-200 rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-5 h-5 text-yellow-600" />
-            </div>
-            <h3 className="text-sm font-medium text-text-700">Pending</h3>
-          </div>
-          <p className="text-2xl font-bold text-text-950">23</p>
-        </div>
+      <AddOrderModal
+        isOpen={modalType === "add"}
+        onClose={closeModal}
+        onSubmit={handleAddOrder}
+        formData={formData}
+        onInputChange={handleInputChange}
+        onItemQuantityChange={handleItemQuantityChange}
+        onRowItemChange={handleRowItemChange}
+        onAddNewItem={handleAddNewItem}
+        onRemoveItem={handleRemoveItem}
+        isSubmitting={isSubmitting}
+        inventoryItems={inventoryItems}
+      />
 
-        <div className="bg-background-50 border border-background-200 rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-blue-600" />
-            </div>
-            <h3 className="text-sm font-medium text-text-700">Processing</h3>
-          </div>
-          <p className="text-2xl font-bold text-text-950">15</p>
-        </div>
-
-        <div className="bg-background-50 border border-background-200 rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            </div>
-            <h3 className="text-sm font-medium text-text-700">Completed</h3>
-          </div>
-          <p className="text-2xl font-bold text-text-950">142</p>
-        </div>
-
-        <div className="bg-background-50 border border-background-200 rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5 text-primary-600" />
-            </div>
-            <h3 className="text-sm font-medium text-text-700">Total</h3>
-          </div>
-          <p className="text-2xl font-bold text-text-950">180</p>
-        </div>
-      </div>
-
-      <OrderLog />
-    </div>
+      <SuccessToast message={successMessage} isVisible={showSuccess} />
+    </>
   );
 };
 

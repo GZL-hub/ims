@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Bell, ChevronRight, LogOut } from 'lucide-react';
 import VoiceControlButton from '../components/VoiceControlButton';
+import { Moon, Sun, Contrast, Bell, ChevronRight, LogOut } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
@@ -80,6 +80,15 @@ const Header: React.FC = () => {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5 text-text-700" />
+        </button>
+
+        {/*High Contrast Mode*/}
+        <button
+          type="button"
+          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
+          aria-label="High Contrast"
+        >
+          <Contrast className="h-5 w-5 text-text-700" />
         </button>
 
         {/* Theme Toggle */}
