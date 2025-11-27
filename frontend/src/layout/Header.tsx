@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import VoiceControlButton from '../components/VoiceControlButton';
 import { Moon, Sun, Contrast, Bell, ChevronRight, LogOut } from 'lucide-react';
 
 interface BreadcrumbItem {
@@ -10,7 +11,7 @@ interface BreadcrumbItem {
 }
 
 const Header: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, highContrast, toggleHighContrast } = useTheme();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,6 +69,10 @@ const Header: React.FC = () => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2 ml-auto sm:ml-0">
+
+        {/*Voice Control Button*/}
+        <VoiceControlButton />
+
         {/* Notifications */}
         <button
           type="button"
@@ -77,15 +82,21 @@ const Header: React.FC = () => {
           <Bell className="h-5 w-5 text-text-700" />
         </button>
 
-        {/*High Contrast Mode*/}
+         {/* High Contrast Mode */}
         <button
           type="button"
-          className="p-2 hover:bg-background-200 rounded-lg transition-colors flex items-center justify-center"
-          aria-label="High Contrast"
+          onClick={toggleHighContrast}
+          title="Toggle high contrast"
+          aria-pressed={highContrast}
+          className={
+            'p-2 rounded-lg transition-colors flex items-center justify-center ' +
+            (highContrast ? 'bg-primary-100' : 'hover:bg-background-200')
+          }
         >
-          <Contrast className="h-5 w-5 text-text-700" />
-        </button>
 
+          <Contrast className={'h-5 w-5 ' + (highContrast ? 'text-primary-700' : 'text-text-700')} />
+        </button>
+        
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
