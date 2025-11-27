@@ -11,7 +11,7 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { ChevronUp, ChevronDown, ShoppingCart, X } from "lucide-react";
+import { ChevronUp, ChevronDown, ShoppingCart, X, Clock, CheckCircle, XCircle } from "lucide-react";
 import type { Order as OrderType } from "../../services/orderService";
 
 interface OrdersTableProps {
@@ -19,6 +19,46 @@ interface OrdersTableProps {
 }
 
 const columnHelper = createColumnHelper<OrderType>();
+
+const statusLabelMap: Record<string, string> = {
+  pending: "Pending",
+  completed: "Completed",
+  cancelled: "Cancelled",
+} as const;
+
+const getStatusBadge = (status: string) => {
+  const styles: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+    pending: {
+      bg: "bg-yellow-100 dark:bg-yellow-900/30",
+      text: "text-yellow-700 dark:text-yellow-300",
+      icon: <Clock className="w-3 h-3" />,
+    },
+    completed: {
+      bg: "bg-green-100 dark:bg-green-900/30",
+      text: "text-green-700 dark:text-green-300",
+      icon: <CheckCircle className="w-3 h-3" />,
+    },
+    cancelled: {
+      bg: "bg-red-100 dark:bg-red-900/30",
+      text: "text-red-700 dark:text-red-300",
+      icon: <XCircle className="w-3 h-3" />,
+    },
+  };
+
+  const s = status.toLowerCase();
+  const style = styles[s];
+
+  if (!style) return status;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${style.bg} ${style.text}`}
+    >
+      {style.icon}
+      {statusLabelMap[s] ?? status}
+    </span>
+  );
+};
 
 const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -39,11 +79,29 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
     columnHelper.accessor("customer", {
       header: "Customer",
       cell: (info) => (
-        <div className="text-center font-medium text-text-900 dark:text-white">
+        <div className="text-center font-mono text-xs text-text-700 dark:text-text-300">
           {info.getValue()}
         </div>
       ),
       size: 180,
+    }),
+    columnHelper.accessor("email", {
+        header: "Email",
+        cell: (info) => (
+            <div className="text-center text-sm text-text-700 dark:text-text-300">
+            {info.getValue() || "-"}
+            </div>
+        ),
+        size: 200,
+        }),
+    columnHelper.accessor("phone", {
+        header: "Phone",
+        cell: (info) => (
+            <div className="text-center text-sm text-text-700 dark:text-text-300">
+            {info.getValue() || "-"}
+            </div>
+        ),
+        size: 140,
     }),
     columnHelper.accessor("items", {
       header: "Items",
@@ -83,25 +141,13 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
       size: 140,
     }),
     columnHelper.accessor("status", {
-      header: "Status",
-      cell: (info) => {
-        const status = info.getValue();
-        const statusColors: Record<string, string> = {
-          Pending: "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300",
-          Completed: "text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-300",
-          Cancelled: "text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-300",
-        };
-        const colorClass = statusColors[status] || "text-text-600 bg-background-100 dark:bg-background-200 dark:text-text-300";
-
-        return (
-          <div className="text-center">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
-              {status}
-            </span>
-          </div>
-        );
-      },
-      size: 120,
+        header: "Status",
+        cell: (info) => (
+            <div className="text-center">
+            {getStatusBadge(info.getValue())}
+            </div>
+        ),
+        size: 120,
     }),
     columnHelper.display({
       id: "actions",
@@ -222,6 +268,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
             </button>
             <h2 className="text-lg font-semibold text-text-900 dark:text-white mb-4">Order Details</h2>
             <p><strong>Customer:</strong> {expandedOrder.customer}</p>
+            <p><strong>Email:</strong> {expandedOrder.email || "-"}</p>
+            <p><strong>Phone:</strong> {expandedOrder.phone || "-"}</p>
             <p><strong>Status:</strong> {expandedOrder.status}</p>
             <p><strong>Date:</strong> {new Date(expandedOrder.date_created).toLocaleString()}</p>
             <div className="mt-4">
