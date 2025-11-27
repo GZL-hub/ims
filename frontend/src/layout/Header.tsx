@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import VoiceControlButton from '../components/VoiceControlButton';
 import { Moon, Sun, Contrast, Bell, ChevronRight, LogOut } from 'lucide-react';
 
 interface BreadcrumbItem {
@@ -68,6 +69,10 @@ const Header: React.FC = () => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2 ml-auto sm:ml-0">
+
+        {/*Voice Control Button*/}
+        <VoiceControlButton />
+
         {/* Notifications */}
         <button
           type="button"
