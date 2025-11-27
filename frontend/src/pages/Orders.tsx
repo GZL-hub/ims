@@ -35,13 +35,15 @@ const Orders: React.FC = () => {
 
   // Form data for new order
   const [formData, setFormData] = useState<{
-    customer: string;
+    customer_name: string;
     email: string;
+    organization: string;
     phone?: string;
     items: { inventoryId: string; itemName: string; quantity: number }[];
   }>({
-    customer: "",
+    customer_name: "",
     email: "",
+    organization: "",
     phone: "",
     items: [],
   });
@@ -68,8 +70,9 @@ const Orders: React.FC = () => {
   // Open modal
   const openAddModal = () => {
     setFormData({
-      customer: "",
+      customer_name: "",
       email: "",
+      organization: "",
       phone: "",
       items: [],
     });
@@ -147,8 +150,9 @@ const Orders: React.FC = () => {
     }
 
     const newOrder: OrderInput = {
-      customer: formData.customer,
+      customer_name: formData.customer_name,
       email: formData.email,
+      organization: formData.organization,
       phone: formData.phone,
       status: "Pending",
       items: formData.items.filter(i => i.quantity > 0),
@@ -182,7 +186,7 @@ const Orders: React.FC = () => {
       filtered = filtered.filter(
         (order) =>
           order._id.toLowerCase().includes(q) ||
-          order.customer.toLowerCase().includes(q)
+          order.customer_name.toLowerCase().includes(q)
       );
     }
 
@@ -223,7 +227,7 @@ const Orders: React.FC = () => {
           onSortChange={setSortBy}
           onAddItem={openAddModal}
         />
-        <OrderTable orders={filteredOrders} />
+        <OrderTable orders={filteredOrders} setOrders={setOrders} />
       </div>
 
       <AddOrderModal

@@ -11,11 +11,13 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { ChevronUp, ChevronDown, ShoppingCart, X, Clock, CheckCircle, XCircle } from "lucide-react";
-import type { Order as OrderType } from "../../services/orderService";
+import { ChevronUp, ChevronDown, ShoppingCart, X, Edit2, Clock, CheckCircle, XCircle } from "lucide-react";
+import { updateOrder, type Order as OrderType } from "../../services/orderService";
+import EditOrderModal from "./EditOrderModal";
 
 interface OrdersTableProps {
   orders: OrderType[];
+  setOrders: React.Dispatch<React.SetStateAction<OrderType[]>>;
 }
 
 const columnHelper = createColumnHelper<OrderType>();
@@ -60,10 +62,53 @@ const getStatusBadge = (status: string) => {
   );
 };
 
-const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
+const OrdersTable: React.FC<OrdersTableProps> = ({ orders, setOrders }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [expandedOrder, setExpandedOrder] = React.useState<OrderType | null>(null);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editableOrder, setEditableOrder] = React.useState<OrderType | null>(null);
+
+  // Open edit modal
+  const handleEditClick = (order: OrderType) => {
+    setEditableOrder(order); 
+    setIsEditing(true);
+  };
+
+  const handleUpdateStatus = async (order: OrderType, newStatus: "Completed" | "Cancelled") => {
+    try {
+        const updatedOrder = await updateOrder(order._id, { ...order, status: newStatus });
+        setOrders(prev => {
+        const updatedOrders = [...prev];
+        const index = updatedOrders.findIndex(o => o._id === updatedOrder._id);
+        if (index !== -1) updatedOrders[index] = updatedOrder;
+        return updatedOrders;
+        });
+        setExpandedOrder(null); 
+    } catch (err) {
+        console.error(err);
+        alert("Error updating order status");
+    }
+  };
+
+  // Save handler
+  const handleSaveEdit = async (updatedOrder: OrderType) => {
+    try {
+        const updated = await updateOrder(updatedOrder._id, updatedOrder);
+        setOrders(prev => {
+        const updatedOrders = [...prev];
+        const index = updatedOrders.findIndex(o => o._id === updated._id);
+        if (index !== -1) updatedOrders[index] = updated;
+        return updatedOrders;
+        });
+        setEditableOrder(null);
+        setIsEditing(false);
+        setExpandedOrder(updated);
+    } catch (err) {
+        console.error(err);
+        alert("Error updating order");
+    }
+  };
 
   // Columns
   const columns = useMemo(() => [
@@ -76,7 +121,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
       ),
       size: 100,
     }),
-    columnHelper.accessor("customer", {
+    columnHelper.accessor("customer_name", {
       header: "Customer",
       cell: (info) => (
         <div className="text-center font-mono text-xs text-text-700 dark:text-text-300">
@@ -94,6 +139,15 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
         ),
         size: 200,
         }),
+    columnHelper.accessor("organization", {
+        header: "Organization",
+        cell: (info) => (
+            <div className="text-center text-sm text-text-700 dark:text-text-300">
+            {info.getValue() || "-"}
+            </div>
+        ),
+        size: 180,
+    }),
     columnHelper.accessor("phone", {
         header: "Phone",
         cell: (info) => (
@@ -263,26 +317,80 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders }) => {
           onClick={() => setExpandedOrder(null)}
         >
           <div className="bg-white dark:bg-background-50 rounded-lg max-w-3xl w-full p-6 relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setExpandedOrder(null)} className="absolute top-4 right-4 text-text-700 dark:text-text-300 hover:text-red-500 transition-colors">
-              <X className="w-6 h-6" />
+            <div className="absolute top-4 right-4 flex items-center gap-3">
+            <button
+                onClick={() => handleEditClick(expandedOrder!)}
+                className="p-2 rounded-md hover:bg-background-100 dark:hover:bg-background-200 transition"
+                title="Edit Order"
+            >
+                <Edit2 className="w-5 h-5" />
             </button>
+
+            <button
+                onClick={() => setExpandedOrder(null)} // closes the view modal
+                className="p-2 rounded-md hover:bg-background-100 dark:hover:bg-background-200 transition"
+                title="Close"
+            >
+                <X className="w-6 h-6" />
+            </button>
+            </div>
             <h2 className="text-lg font-semibold text-text-900 dark:text-white mb-4">Order Details</h2>
-            <p><strong>Customer:</strong> {expandedOrder.customer}</p>
+            <p><strong>Customer:</strong> {expandedOrder.customer_name}</p>
             <p><strong>Email:</strong> {expandedOrder.email || "-"}</p>
+            <p><strong>Organization:</strong> {expandedOrder.organization || "-"}</p>
             <p><strong>Phone:</strong> {expandedOrder.phone || "-"}</p>
             <p><strong>Status:</strong> {expandedOrder.status}</p>
             <p><strong>Date:</strong> {new Date(expandedOrder.date_created).toLocaleString()}</p>
+            {/* Items List */}
             <div className="mt-4">
-              <h3 className="font-medium text-text-900 dark:text-white mb-2">Items</h3>
-              <ul className="list-disc pl-5 space-y-1">
+            <h3 className="font-medium text-text-900 dark:text-white mb-2">Items</h3>
+            <ul className="list-disc pl-5 space-y-1">
                 {expandedOrder.items.map((item) => (
-                  <li key={item.inventoryId}>{item.itemName} - Quantity: {item.quantity}</li>
+                <li key={item.inventoryId}>
+                    {item.itemName} - Quantity: {item.quantity}
+                </li>
                 ))}
-              </ul>
+            </ul>
+
+            {/* Action Buttons (Complete & Cancel) */}
+            <div className="mt-6 flex justify-end gap-4">
+            <button
+                onClick={() => handleUpdateStatus(expandedOrder, "Completed")}
+                disabled={expandedOrder.status === "Completed" || expandedOrder.status === "Cancelled"}
+                className={`px-4 py-2 rounded-lg font-medium text-white transition ${
+                expandedOrder.status === "Completed" || expandedOrder.status === "Cancelled"
+                    ? "bg-green-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+            >
+                Complete
+            </button>
+
+            <button
+                onClick={() => handleUpdateStatus(expandedOrder, "Cancelled")}
+                disabled={expandedOrder.status === "Cancelled" || expandedOrder.status === "Completed"}
+                className={`px-4 py-2 rounded-lg font-medium text-white transition ${
+                expandedOrder.status === "Cancelled" || expandedOrder.status === "Completed"
+                    ? "bg-red-300 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+            >
+                Cancel
+            </button>
+            </div>
             </div>
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Edit Order Modal */}
+      {isEditing && editableOrder && (
+         <EditOrderModal
+            order={editableOrder}
+            onClose={() => setIsEditing(false)}
+            onSave={handleSaveEdit}
+         />
       )}
     </>
   );
