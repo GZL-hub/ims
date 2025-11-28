@@ -18,6 +18,36 @@ export type InventoryItemInput = Omit<InventoryItem, '_id' | 'image' | 'status' 
   image?: File; // File object for creating/updating items
 };
 
+export type InventoryAlert = {
+  _id: string;
+  item_name: string;
+  barcode: string;
+  category: string;
+  quantity: number;
+  threshold: number;
+  expiry_date?: string;
+  status: string;
+  severity: 'critical' | 'warning' | 'low-stock' | 'out-of-stock';
+  alertType: 'expired' | 'expiring-soon' | 'expiring' | 'low-stock' | 'out-of-stock';
+  daysLeft: number;
+};
+
+export type AlertStats = {
+  total: number;
+  critical: number;
+  warning: number;
+  lowStock: number;
+  outOfStock: number;
+  expired: number;
+  expiringSoon: number;
+  expiring: number;
+};
+
+export type AlertsResponse = {
+  alerts: InventoryAlert[];
+  stats: AlertStats;
+};
+
 // Helper function to get full image URL
 export const getImageUrl = (imagePath?: string): string | undefined => {
   if (!imagePath) return undefined;
@@ -191,6 +221,25 @@ export const deleteInventoryItem = async (id: string): Promise<void> => {
     }
   } catch (error) {
     console.error('Error deleting inventory item:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get inventory alerts for low stock and expiring items
+ */
+export const getInventoryAlerts = async (): Promise<AlertsResponse> => {
+  try {
+    const response = await api.get('/inventory/alerts');
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch inventory alerts');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching inventory alerts:', error);
     throw error;
   }
 };
