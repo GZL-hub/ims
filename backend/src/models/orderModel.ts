@@ -7,6 +7,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder extends Document {
+  customerId?: mongoose.Schema.Types.ObjectId; // Optional reference to Customer
   customer_name: string;
   email: string;
   organization: string;
@@ -24,6 +25,7 @@ const OrderItemSchema = new Schema<IOrderItem>({
 });
 
 const OrderSchema = new Schema<IOrder>({
+  customerId: { type: Schema.Types.ObjectId, ref: "Customer" },
   customer_name: { type: String, required: true },
   email: { type: String, required: true },
   organization: { type: String, required: true },

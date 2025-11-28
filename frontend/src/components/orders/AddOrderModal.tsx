@@ -1,11 +1,13 @@
-import React from "react";
-import { X as XIcon, Loader2 } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { X as XIcon, Loader2, Search, Users } from "lucide-react";
+import type { Customer } from "../../services/customerService";
 
 interface AddOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   formData: {
+    customerId?: string;
     customer_name: string;
     email: string;
     organization: string;
@@ -17,8 +19,10 @@ interface AddOrderModalProps {
   onRowItemChange: (rowIndex: number, newItemId: string) => void;
   onAddNewItem: (newItemId: string) => void;
   onRemoveItem: (inventoryId: string) => void;
+  onCustomerSelect: (customer: Customer | null) => void;
   isSubmitting: boolean;
   inventoryItems: { _id: string; item_name: string; quantity: number }[];
+  customers: Customer[];
 }
 
 const AddOrderModal: React.FC<AddOrderModalProps> = ({
@@ -31,10 +35,26 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
   onRowItemChange,
   onAddNewItem,
   onRemoveItem,
+  onCustomerSelect,
   isSubmitting,
   inventoryItems,
+  customers,
 }) => {
-  if (!isOpen) return null;
+  // All hooks must be called before any conditional returns
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+  // Filter customers based on search
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearchQuery) return customers.slice(0, 5);
+    const query = customerSearchQuery.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.customer_name.toLowerCase().includes(query) ||
+        c.organization.toLowerCase().includes(query) ||
+        c.email.toLowerCase().includes(query)
+    ).slice(0, 5);
+  }, [customerSearchQuery, customers]);
 
   // Compute available options for each row
   const getAvailableOptions = (rowIndex: number) =>
@@ -50,6 +70,20 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
     inventoryItems.filter(
       (item) => !formData.items.some((i) => i.inventoryId === item._id)
     );
+
+  const handleCustomerClick = (customer: Customer) => {
+    onCustomerSelect(customer);
+    setCustomerSearchQuery(customer.customer_name);
+    setShowCustomerDropdown(false);
+  };
+
+  const handleClearCustomer = () => {
+    onCustomerSelect(null);
+    setCustomerSearchQuery("");
+  };
+
+  // Now we can do conditional rendering
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
@@ -71,6 +105,64 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
 
         {/* Modal Body */}
         <form onSubmit={onSubmit} className="p-6 space-y-6">
+          {/* Customer Search - New Feature */}
+          <div>
+            <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">
+              <Users className="inline w-4 h-4 mr-1" />
+              Search Existing Customer (Optional)
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-400" />
+              <input
+                type="text"
+                value={customerSearchQuery}
+                onChange={(e) => {
+                  setCustomerSearchQuery(e.target.value);
+                  setShowCustomerDropdown(true);
+                }}
+                onFocus={() => setShowCustomerDropdown(true)}
+                placeholder="Search by name, organization, or email..."
+                className="w-full pl-10 pr-20 py-2.5 border border-background-300 dark:border-background-400 rounded-lg bg-white dark:bg-background-50 text-text-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                disabled={isSubmitting}
+              />
+              {formData.customerId && (
+                <button
+                  type="button"
+                  onClick={handleClearCustomer}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50"
+                >
+                  Clear
+                </button>
+              )}
+
+              {/* Dropdown */}
+              {showCustomerDropdown && filteredCustomers.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-background-50 border border-background-300 dark:border-background-400 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {filteredCustomers.map((customer) => (
+                    <button
+                      key={customer._id}
+                      type="button"
+                      onClick={() => handleCustomerClick(customer)}
+                      className="w-full text-left px-4 py-3 hover:bg-background-100 dark:hover:bg-background-200 border-b border-background-200 dark:border-background-300 last:border-0 transition-colors"
+                    >
+                      <div className="font-medium text-text-900 dark:text-white">{customer.customer_name}</div>
+                      <div className="text-sm text-text-600 dark:text-text-400">{customer.organization} • {customer.email}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {formData.customerId && (
+              <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                ✓ Customer selected - fields auto-filled
+              </p>
+            )}
+          </div>
+
+          <div className="border-t border-background-200 dark:border-background-300 pt-4">
+            <p className="text-sm text-text-600 dark:text-text-400 mb-4">Or enter customer details manually:</p>
+          </div>
+
           {/* Customer Name */}
           <div>
             <label className="block text-sm font-medium text-text-900 dark:text-white mb-2">

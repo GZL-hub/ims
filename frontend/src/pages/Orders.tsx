@@ -7,8 +7,12 @@ import {
   getAllOrders,
   createOrder,
   type Order as OrderType,
-  type OrderInput, 
-} from "../services/orderService"; 
+  type OrderInput,
+} from "../services/orderService";
+import {
+  getAllCustomers,
+  type Customer,
+} from "../services/customerService"; 
 import AddOrderModal from "../components/orders/AddOrderModal";
 import SuccessToast from "../components/inventory/SuccessToast";
 import OrderSearchAndFilter from "../components/orders/OrderSearchAndFilter";
@@ -20,6 +24,7 @@ const Orders: React.FC = () => {
   // State
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [modalType, setModalType] = useState<ModalType>(null);
@@ -35,12 +40,14 @@ const Orders: React.FC = () => {
 
   // Form data for new order
   const [formData, setFormData] = useState<{
+    customerId?: string;
     customer_name: string;
     email: string;
     organization: string;
     phone?: string;
     items: { inventoryId: string; itemName: string; quantity: number }[];
   }>({
+    customerId: undefined,
     customer_name: "",
     email: "",
     organization: "",
@@ -48,18 +55,20 @@ const Orders: React.FC = () => {
     items: [],
   });
 
-  // Fetch orders and inventory
+  // Fetch orders, inventory, and customers
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersData, inventoryData] = await Promise.all([
+        const [ordersData, inventoryData, customersData] = await Promise.all([
           getAllOrders(),
           getAllInventoryItems(),
+          getAllCustomers(),
         ]);
         setOrders(ordersData);
         setInventoryItems(inventoryData);
+        setCustomers(customersData.filter(c => c.status === "Active")); // Only active customers
       } catch (err) {
-        console.error("Error fetching orders or inventory:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
@@ -70,6 +79,7 @@ const Orders: React.FC = () => {
   // Open modal
   const openAddModal = () => {
     setFormData({
+      customerId: undefined,
       customer_name: "",
       email: "",
       organization: "",
@@ -77,6 +87,29 @@ const Orders: React.FC = () => {
       items: [],
     });
     setModalType("add");
+  };
+
+  // Handle customer selection
+  const handleCustomerSelect = (customer: Customer | null) => {
+    if (customer) {
+      setFormData((prev) => ({
+        ...prev,
+        customerId: customer._id,
+        customer_name: customer.customer_name,
+        email: customer.email,
+        organization: customer.organization,
+        phone: customer.phone || "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        customerId: undefined,
+        customer_name: "",
+        email: "",
+        organization: "",
+        phone: "",
+      }));
+    }
   };
 
   // Close modal
@@ -241,8 +274,10 @@ const Orders: React.FC = () => {
         onRowItemChange={handleRowItemChange}
         onAddNewItem={handleAddNewItem}
         onRemoveItem={handleRemoveItem}
+        onCustomerSelect={handleCustomerSelect}
         isSubmitting={isSubmitting}
         inventoryItems={inventoryItems}
+        customers={customers}
       />
 
       <SuccessToast message={successMessage} isVisible={showSuccess} />
