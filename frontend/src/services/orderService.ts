@@ -8,8 +8,9 @@ export type OrderItem = {
 
 export type Order = {
   _id: string;
-  customer: string;
-  email: string;       
+  customer_name: string;
+  email: string;    
+  organization: string;   
   phone?: string;  
   items: OrderItem[];
   status: 'Pending' | 'Completed' | 'Cancelled';
@@ -29,7 +30,8 @@ type BackendOrderItem = {
 type BackendOrder = {
   _id: string;
   customer_name: string;
-  email: string;       
+  email: string;    
+  organization: string;   
   phone?: string;  
   items: BackendOrderItem[];
   status: string;
@@ -40,8 +42,9 @@ type BackendOrder = {
 /** Utility to map backend → frontend */
 const mapBackendOrder = (order: BackendOrder): Order => ({
   _id: order._id,
-  customer: order.customer_name, // map customer_name → customer
+  customer_name: order.customer_name, // map customer_name → customer_name
   email: order.email,
+  organization: order.organization,
   phone: order.phone,
   status: order.status as Order['status'],
   date_created: order.date_created,
@@ -88,8 +91,9 @@ export const getOrderById = async (id: string): Promise<Order> => {
 export const createOrder = async (order: OrderInput): Promise<Order> => {
   try {
     const payload = {
-      customer_name: order.customer, 
-      email: order.email,       
+      customer_name: order.customer_name, 
+      email: order.email,  
+      organization: order.organization,
       phone: order.phone,
       status: order.status,
       items: order.items.map((i) => ({
@@ -116,13 +120,17 @@ export const updateOrder = async (id: string, order: Partial<OrderInput>): Promi
     const payload = order.items
       ? {
           ...order,
+          organization: order.organization,
           items: order.items.map((i) => ({
             inventoryId: i.inventoryId,
             item_name: i.itemName,
             quantity: i.quantity,
           })),
         }
-      : order;
+      : { 
+        ...order,
+        organization: order.organization
+      };
 
     const response = await api.put(`/orders/${id}`, payload);
     if (!response.ok) throw new Error('Failed to update order');
