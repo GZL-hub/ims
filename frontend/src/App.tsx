@@ -15,6 +15,7 @@ import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
 import Orders from './pages/Orders';
 import BarcodeScanner from './pages/BarcodeScanner';
+import CRM from './pages/CRM';
 
 function App() {
   return (
@@ -64,6 +65,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout><Orders /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm"
+              element={
+                <ProtectedRoute requiredPermission="customer:read">
+                  <Layout><CRM /></Layout>
                 </ProtectedRoute>
               }
             />

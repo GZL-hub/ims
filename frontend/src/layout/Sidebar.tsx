@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ScanBarcode,
+  UserCog,
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -133,6 +134,23 @@ const Sidebar: React.FC = () => {
                 </div>
               </div>
 
+              {/* Business Section */}
+              <div>
+                {!isCollapsed && (
+                  <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-text-600 whitespace-nowrap">
+                    Business
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <NavItem href="/orders" icon={ShoppingCart}>
+                    Orders
+                  </NavItem>
+                  <NavItem href="/crm" icon={UserCog}>
+                    CRM
+                  </NavItem>
+                </div>
+              </div>
+
               {/* Management Section */}
               <div>
                 {!isCollapsed && (
@@ -146,9 +164,6 @@ const Sidebar: React.FC = () => {
                   </NavItem>
                   <NavItem href="/barcode-scanner" icon={ScanBarcode}>
                     Barcode Scanner
-                  </NavItem>
-                  <NavItem href="/orders" icon={ShoppingCart}>
-                    Orders
                   </NavItem>
                   <NavItem href="/users" icon={Users}>
                     Users
