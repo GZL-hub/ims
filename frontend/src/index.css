@@ -209,3 +209,22 @@ html,
 .animate-slideIn {
   animation: slideIn 0.3s ease-out;
 }
+
+/* ===== High Contrast Mode ===== */
+.high-contrast {
+  /* Boost contrast and saturation non-destructively */
+  filter: contrast(155%) saturate(120%);
+}
+
+/* Strong focus outlines for keyboard users */
+.high-contrast :focus {
+  outline: 3px solid #ffd54f;
+  outline-offset: 2px;
+}
+
+/* Optional: increase text weight for readability */
+.high-contrast body,
+.high-contrast .text-text-700,
+.high-contrast .text-text-900 {
+  font-weight: 600;
+}
