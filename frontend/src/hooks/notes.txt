@@ -1,103 +1,698 @@
-Notes 
+================================================================================
+TTS & VOICE COMMANDS IMPLEMENTATION GUIDE - I-IMS PROJECT
+================================================================================
 
-useTTS.ts (Text-to-Speech Hook) 
+================================================================================
+SECTION 1: ALL AVAILABLE VOICE COMMANDS
+================================================================================
 
-What it does: Converts text into spoken audio using the browser's built-in speech synthesis. 
+--------------------------------------------------------------------------------
+1. NAVIGATION COMMANDS (9 Routes)
+--------------------------------------------------------------------------------
 
- 
+Command                     | What It Does              | Variations
+---------------------------|---------------------------|---------------------------
+"Go to dashboard"          | Navigate to Dashboard     | "open dashboard", "show dashboard", "take me to home"
+"Go to alerts"             | Navigate to Alerts page   | "open alerts", "show me alerts"
+"Go to inventory"          | Navigate to Inventory     | "open stock", "show inventory"
+"Go to reports"            | Navigate to Reports       | "show analytics", "open reports"
+"Go to orders"             | Navigate to Orders page   | "open orders", "show orders"
+"Go to users"              | Navigate to Users page    | "show people", "open users"
+"Go to settings"           | Navigate to Settings      | "open preferences", "show settings"
+"Go to barcode scanner"    | Navigate to Scanner       | "open barcode scanner"
+"Go to roles"              | Navigate to Roles         | "open roles", "show roles"
 
-Core components: 
+--------------------------------------------------------------------------------
+2. INFORMATION COMMANDS
+--------------------------------------------------------------------------------
 
-speak(text, options) - Main function that makes text speak 
+Command                     | What It Does
+---------------------------|--------------------------------------------------
+"Read page"                | Speaks information about current page
+"What's on this page"      | Same as "read page"
 
-Uses SpeechSynthesisUtterance (browser API) to create a speech object 
+--------------------------------------------------------------------------------
+3. CONTROL COMMANDS
+--------------------------------------------------------------------------------
 
-Options: rate (speed), pitch (voice tone), volume 
+Command                     | What It Does
+---------------------------|--------------------------------------------------
+"Stop"                     | Stop speaking immediately
+"Quiet"                    | Stop speaking
+"Silence"                  | Stop speaking
+"Shut up"                  | Stop speaking
+"Help"                     | Shows list of available commands + speaks them
+"What can I say"           | Shows help menu
 
-isSpeaking - Boolean state that tracks if speech is active  
+--------------------------------------------------------------------------------
+4. SETTINGS PAGE COMMANDS (Only work on Settings page)
+--------------------------------------------------------------------------------
 
-Updates when speech starts/stops 
+Command                     | What It Does
+---------------------------|--------------------------------------------------
+"Speak faster"             | Increases speech rate by 0.25x
+"Speak slower"             | Decreases speech rate by 0.25x
+"Make it louder"           | Increases volume by 10%
+"Make it quieter"          | Decreases volume by 10%
+"Turn on voice"            | Enables text-to-speech
+"Turn off voice"           | Disables text-to-speech
+"Test voice"               | Plays test message with current settings
 
-Used to change button states (Play/Stop) 
+--------------------------------------------------------------------------------
+5. PLACEHOLDER COMMANDS (Not yet functional)
+--------------------------------------------------------------------------------
 
-voices - Array of available voices on the system  
+Command                     | Status
+---------------------------|--------------------------------------------------
+"Generate PDF report"      | Says "feature will be implemented soon"
+"Generate CSV report"      | Says "feature will be implemented soon"
 
-Loads asynchronously when component mounts 
 
-Different browsers have different voices 
+================================================================================
+SECTION 2: WHAT TTS CAN DO ON OUR WEBSITE
+================================================================================
 
-Event handlers:  
+--------------------------------------------------------------------------------
+1. PAGE NARRATION
+--------------------------------------------------------------------------------
 
-onstart → Sets isSpeaking = true 
+When you say "Read page", it speaks:
 
-onend → Sets isSpeaking = false 
+Dashboard:
+"You are on the dashboard page. This is your main overview of the inventory system."
 
-onerror → Handles errors and logs them 
+Alerts:
+"You are on the alerts page. Here you can view critical alerts, warnings, and low stock notifications."
 
- 
+Inventory:
+"You are on the inventory page. Manage your stock items here."
 
-How it works step-by-step: 
+Reports:
+"You are on the reports and analytics page. Generate and view inventory reports."
 
-User clicks "Read Alerts" button 
+Orders:
+"You are on the orders page. View and manage inventory orders."
 
-Button calls speak("Alert message") 
+Users:
+"You are on the users page. Manage system users."
 
-Hook creates SpeechSynthesisUtterance object with the text 
+Roles:
+"You are on the roles and access page. Configure user permissions."
 
-Browser's speech engine speaks the text 
+Settings:
+"You are on the settings page. Customize your system preferences."
 
-When done, onend fires and updates stat 
+Barcode Scanner:
+"You are on the barcode scanner page. Scan items to quickly access or update inventory."
 
- 
+--------------------------------------------------------------------------------
+2. NAVIGATION CONFIRMATION
+--------------------------------------------------------------------------------
 
-useVoiceCommands.ts (Voice Recognition Hook) 
+After every navigation command, TTS confirms:
+- "Opening dashboard"
+- "Opening alerts page"
+- "Opening inventory"
+- etc.
 
-What it does: Listens to your voice and matches what you say to predefined commands. 
+--------------------------------------------------------------------------------
+3. SETTINGS FEEDBACK
+--------------------------------------------------------------------------------
 
- 
+When adjusting settings via voice:
+- "Speech rate set to 1.25" (when you say "speak faster")
+- "Volume set to 80 percent" (when you say "make it louder")
+- "Text to speech enabled" (when you turn it on)
+- "Voice commands enabled/disabled"
 
-Core components: 
+--------------------------------------------------------------------------------
+4. HELP MENU
+--------------------------------------------------------------------------------
 
-Speech Recognition API - Browser's voice recognition  
+When you say "Help", it speaks:
+"You can say: go to dashboard, read page, open settings, or stop to stop speaking"
 
-webkitSpeechRecognition (Chrome/Edge) 
+And shows a visual popup with all commands.
 
-Converts speech → text (transcript) 
+--------------------------------------------------------------------------------
+5. TEST VOICE
+--------------------------------------------------------------------------------
 
-transcript - The final text of what you said  
+On Settings page, click "Test Voice Settings" or say "Test voice":
+"This is a test of the text to speech system. How does it sound?"
 
-Used to match against commands 
+--------------------------------------------------------------------------------
+6. MANUAL TTS CUSTOMIZATION (Settings Page)
+--------------------------------------------------------------------------------
 
-interimTranscript - Text as you're speaking (real-time)  
+You can customize how TTS sounds:
+- Speed: 0.5x (slow) to 2x (fast)
+- Pitch: 0.5 (low) to 2 (high)
+- Volume: 0% (silent) to 100% (loud)
+- Voice: Choose from available system voices
 
-Shows what the browser thinks you're saying 
 
-Command matching:  
+================================================================================
+SECTION 3: HOW OUR TTS IMPLEMENTATION WORKS
+================================================================================
 
-Converts your speech to lowercase text 
+--------------------------------------------------------------------------------
+ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
 
-Checks if transcript includes any command strings 
+User Voice Input
+       ↓
+[Microphone] → [Browser's SpeechRecognition API]
+       ↓
+[Text Transcript] → [Our useVoiceCommands Hook]
+       ↓
+[Pattern Matching] → [Command Execution]
+       ↓
+[useTTS Hook] → [Browser's SpeechSynthesis API]
+       ↓
+[Speakers] → User Hears Response
 
-Supports regex for flexible matching (e.g., "search for X") 
+--------------------------------------------------------------------------------
+COMPONENT 1: useTTS Hook
+--------------------------------------------------------------------------------
 
- 
+File: frontend/src/hooks/useTTS.ts
 
-How it works step-by-step: 
+What it does:
+Provides text-to-speech functionality using the browser's native SpeechSynthesis API.
 
-User clicks "Voice Commands" button 
+How it works:
 
-startListening() is called 
+STEP 1: Initialize
+const { speak, stop, isSpeaking, voices } = useTTS();
 
-Browser asks for microphone permission 
+STEP 2: When you call speak(text):
+speak("Hello world");
 
-User says "read my alerts" 
+Behind the scenes:
 
-Speech → transcript: "read my alerts" 
+1. Creates an Utterance Object
+   const utterance = new SpeechSynthesisUtterance("Hello world");
 
-Hook finds matching command 
+2. Applies Settings
+   utterance.rate = 1;      // Speed (0.5 - 2)
+   utterance.pitch = 1;     // Pitch (0.5 - 2)
+   utterance.volume = 1;    // Volume (0 - 1)
+   utterance.voice = null;  // Uses default voice
 
-Executes the command's action() function 
+3. Sets Up Event Handlers
+   utterance.onstart = () => setIsSpeaking(true);   // Update UI
+   utterance.onend = () => setIsSpeaking(false);     // Update UI
+   utterance.onerror = (e) => console.error(e);      // Handle errors
 
- 
+4. Sends to Browser
+   window.speechSynthesis.speak(utterance);
 
- 
+5. Browser Processing:
+   - Browser sends utterance to OS text-to-speech engine
+   - OS converts text to audio waveform
+   - Audio plays through speakers
+   - Event fires when complete
+
+STEP 3: State Management
+const [isSpeaking, setIsSpeaking] = useState(false);
+const [isPaused, setIsPaused] = useState(false);
+
+These track the current state so your UI can show:
+- Gray mic icon (dormant)
+- Blue pulsing mic (listening)
+- Bouncing speaker icon (speaking)
+
+--------------------------------------------------------------------------------
+COMPONENT 2: useVoiceCommands Hook
+--------------------------------------------------------------------------------
+
+File: frontend/src/hooks/useVoiceCommands.ts
+
+What it does:
+Listens to your voice and matches it to predefined commands.
+
+How it works:
+
+STEP 1: Initialize SpeechRecognition
+const recognition = new webkitSpeechRecognition(); // Chrome/Edge
+recognition.continuous = false;  // Stop after one command
+recognition.interimResults = true; // Show text as you speak
+recognition.lang = 'en-US';      // English
+
+STEP 2: Define Commands
+const commands = [
+  {
+    command: /go to (dashboard|alerts|inventory)/i, // Regex pattern
+    action: (matches) => {
+      const page = matches[1]; // Extract "dashboard" or "alerts" etc.
+      navigate(`/${page}`);    // Navigate to that page
+      speak(`Opening ${page}`); // Confirm with audio
+    }
+  }
+];
+
+STEP 3: Start Listening
+When you click the voice button:
+startListening() → recognition.start();
+
+What happens:
+1. Microphone activates (browser asks permission first time)
+2. Browser records audio
+3. Audio sent to Google Cloud Speech API (Chrome/Edge)
+4. AI converts audio to text
+5. Text returned as "transcript"
+
+STEP 4: Real-Time Transcription
+As you speak:
+
+recognition.onresult = (event) => {
+  let interim = "";  // Text as you're speaking
+  let final = "";    // Final text when you finish
+  
+  for (let result of event.results) {
+    if (result.isFinal) {
+      final += result[0].transcript; // Complete sentence
+    } else {
+      interim += result[0].transcript; // Partial text
+    }
+  }
+  
+  setInterimTranscript(interim); // Show in UI
+  setTranscript(final);          // Process command
+};
+
+Example:
+- You say: "Go to..."
+- Interim: "go to" (shows in real-time)
+- You say: "...dashboard"
+- Final: "go to dashboard" (command executes)
+
+STEP 5: Pattern Matching
+When final transcript is received:
+
+const fullTranscript = "go to dashboard".toLowerCase();
+
+// Check each command
+commands.forEach(cmd => {
+  if (typeof cmd.command === 'string') {
+    // Simple string match
+    if (fullTranscript.includes(cmd.command.toLowerCase())) {
+      cmd.action(); // Execute!
+    }
+  } else if (cmd.command instanceof RegExp) {
+    // Regex match (more flexible)
+    const matches = fullTranscript.match(cmd.command);
+    if (matches) {
+      cmd.action(matches); // Execute with captured groups!
+    }
+  }
+});
+
+Example Regex Breakdown:
+/go to (dashboard|alerts|inventory)/i
+
+- "go to" - Must say these words
+- "(dashboard|alerts|inventory)" - One of these (captured in group)
+- "i" - Case insensitive
+
+Matches:
+- ✓ "Go to dashboard"
+- ✓ "GO TO ALERTS"
+- ✓ "go to inventory"
+- ✗ "show dashboard" (doesn't start with "go to")
+
+STEP 6: Execute Action
+action: (matches) => {
+  const page = matches[1];        // "dashboard"
+  navigate(`/${page}`);           // React Router navigates
+  speak(`Opening ${page}`);       // TTS confirms
+}
+
+--------------------------------------------------------------------------------
+COMPONENT 3: VoiceControlButton
+--------------------------------------------------------------------------------
+
+File: frontend/src/components/VoiceControlButton.tsx
+
+What it does:
+The microphone button in the header that ties everything together.
+
+How it works:
+
+STEP 1: Setup
+const { speak, stop, isSpeaking } = useTTS();
+const { isListening, startListening, stopListening } = useVoiceCommands(commands);
+
+STEP 2: Click Handler
+const handleClick = () => {
+  if (isSpeaking) {
+    stop();              // Stop talking
+  } else if (isListening) {
+    stopListening();     // Stop listening
+  } else {
+    startListening();    // Start listening
+  }
+};
+
+STEP 3: Visual States
+{isSpeaking ? (
+  <Volume2 className="animate-bounce" /> // 🔊 Bouncing speaker
+) : isListening ? (
+  <Mic className="animate-pulse" />      // 🎤 Pulsing mic (blue)
+) : (
+  <Mic className="text-gray-600" />      // 🎤 Gray mic (dormant)
+)}
+
+STEP 4: Active Indicator Dot
+{(isListening || isSpeaking) && (
+  <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+)}
+
+Small blue dot in corner when active.
+
+
+================================================================================
+SECTION 4: COMPLETE USER FLOW EXAMPLE
+================================================================================
+
+Scenario: User wants to navigate to Alerts page using voice
+
+STEP-BY-STEP:
+
+1. User clicks microphone button
+   VoiceControlButton.handleClick() called
+   → startListening()
+   → recognition.start()
+   → Microphone activates
+   → Icon changes to pulsing blue mic
+   → Blue dot appears
+
+2. User says "Go to alerts"
+   Microphone captures audio
+   → Audio sent to Google Cloud
+   → AI processes: "go to alerts"
+   → recognition.onresult fires
+   → Transcript: "go to alerts"
+
+3. Pattern matching
+   Check commands array
+   → Match found: /go to (?:the )?alerts?/i
+   → Extract: "alerts"
+   → Execute action function
+
+4. Navigation
+   navigate('/alerts')
+   → React Router changes page
+   → Browser URL: /alerts
+   → Alerts page loads
+
+5. Audio confirmation
+   speak('Opening alerts page')
+   → Creates SpeechSynthesisUtterance
+   → Browser TTS engine speaks
+   → User hears: "Opening alerts page"
+   → Icon changes to bouncing speaker
+
+6. Completion
+   utterance.onend fires
+   → isSpeaking = false
+   → Icon returns to gray mic (dormant)
+   → Blue dot disappears
+   → Ready for next command
+
+
+================================================================================
+SECTION 5: SETTINGS PERSISTENCE
+================================================================================
+
+File: frontend/src/pages/Settings.tsx
+
+How settings are saved:
+
+// Load from localStorage on mount
+const [settings, setSettings] = useState<VoiceSettings>(() => {
+  const saved = localStorage.getItem('voiceSettings');
+  return saved ? JSON.parse(saved) : defaultSettings;
+});
+
+// Save to localStorage whenever changed
+useEffect(() => {
+  localStorage.setItem('voiceSettings', JSON.stringify(settings));
+}, [settings]);
+
+What this means:
+- Settings saved in browser's localStorage
+- Persists across page refreshes
+- Persists even if you close browser
+- Unique to each user/browser
+- Not synced to backend (yet)
+
+
+================================================================================
+SECTION 6: KEY TECHNICAL FEATURES
+================================================================================
+
+1. ZERO EXTERNAL DEPENDENCIES
+   - Uses native Web APIs
+   - No react-speech-kit or external libraries
+   - Smaller bundle size
+   - No API keys needed
+
+2. TYPE-SAFE
+   interface VoiceCommand {
+     command: string | RegExp;
+     action: (matches?: string[]) => void;
+     description?: string;
+   }
+   Full TypeScript support with proper interfaces.
+
+3. ERROR HANDLING
+   recognition.onerror = (event) => {
+     setError(event.error);
+     console.error('Speech recognition error:', event.error);
+   };
+
+4. BROWSER DETECTION
+   const isSupported = 'webkitSpeechRecognition' in window;
+   if (!isSupported) return null; // Don't show button
+
+5. CONTEXT-AWARE
+   const location = useLocation();
+   // Commands know which page you're on
+
+
+================================================================================
+SECTION 7: DATA FLOW DIAGRAM
+================================================================================
+
+┌─────────────┐
+│   User      │
+└──────┬──────┘
+       │ Clicks mic button
+       ▼
+┌─────────────────────┐
+│ VoiceControlButton  │
+└──────┬──────────────┘
+       │ startListening()
+       ▼
+┌─────────────────────┐
+│ useVoiceCommands    │ ←──┐
+│  Hook               │    │ 
+└──────┬──────────────┘    │ Commands array
+       │ recognition.start()│
+       ▼                    │
+┌─────────────────────┐    │
+│ Browser Microphone  │    │
+└──────┬──────────────┘    │
+       │ Audio stream      │
+       ▼                    │
+┌─────────────────────┐    │
+│ Google Cloud API    │    │
+│ (Chrome/Edge)       │    │
+└──────┬──────────────┘    │
+       │ Transcript        │
+       ▼                    │
+┌─────────────────────┐    │
+│ Pattern Matching    │────┘
+└──────┬──────────────┘
+       │ Command matched
+       ▼
+┌─────────────────────┐
+│ Execute Action      │
+│ - navigate()        │
+│ - speak()          │
+└──────┬──────────────┘
+       │ speak(text)
+       ▼
+┌─────────────────────┐
+│ useTTS Hook         │
+└──────┬──────────────┘
+       │ SpeechSynthesis
+       ▼
+┌─────────────────────┐
+│ OS TTS Engine       │
+└──────┬──────────────┘
+       │ Audio output
+       ▼
+┌─────────────────────┐
+│ Speakers 🔊         │
+└─────────────────────┘
+
+
+================================================================================
+SECTION 8: BROWSER COMPATIBILITY
+================================================================================
+
+--------------------------------------------------------------------------------
+TEXT-TO-SPEECH (Works Everywhere)
+--------------------------------------------------------------------------------
+
+Browser Support:
+✓ Chrome/Edge - Full support
+✓ Safari - Full support
+✓ Firefox - Full support
+✓ Opera - Full support
+
+Why it works everywhere:
+- SpeechSynthesis API is a W3C Standard
+- All major browsers have implemented it
+- Part of Web Speech API specification (since 2012)
+- Uses operating system's built-in text-to-speech engine
+
+How it works:
+1. Your code calls window.speechSynthesis.speak(utterance)
+2. Browser uses the OS's built-in text-to-speech engine
+3. OS converts text to audio
+4. Browser plays the audio through speakers
+
+--------------------------------------------------------------------------------
+VOICE RECOGNITION (Chrome/Edge Only)
+--------------------------------------------------------------------------------
+
+Browser Support:
+✓ Chrome - Full support
+✓ Edge - Full support (uses Chromium engine)
+✗ Safari - Very limited/experimental
+✗ Firefox - Not supported
+✗ Opera - Not supported
+
+Why it DOESN'T work everywhere:
+
+1. NO STANDARD IMPLEMENTATION
+   - SpeechRecognition API is NOT a finalized web standard
+   - Still in "draft" status at W3C
+   - Browser vendors not required to implement it
+
+2. TECHNICAL COMPLEXITY
+   Voice recognition is much harder than text-to-speech:
+   - TTS: Text → Audio (one direction, deterministic)
+   - Voice: Audio → Text (requires AI/ML, language models, cloud processing)
+
+3. PRIVACY CONCERNS
+   Voice recognition requires:
+   - Microphone access
+   - Audio data processing
+   - Often cloud services for accuracy
+   Browsers are cautious about features that could invade privacy
+
+4. VENDOR-SPECIFIC IMPLEMENTATION
+   Chrome/Edge use Google's speech recognition engine:
+   - Proprietary technology
+   - Requires Google Cloud Speech API backend
+   - Only available in Chromium-based browsers
+
+Technical Process (Chrome/Edge):
+1. Microphone captures audio
+2. Audio sent to Google Cloud Speech-to-Text API
+3. Google's AI processes it
+4. Text returned to browser
+5. Your code receives the transcript
+
+Why Others Don't Support It:
+- Firefox: Doesn't want Google dependency
+- Safari: Working on their own implementation (slow progress)
+- Privacy concerns: Sending audio to Google servers
+
+--------------------------------------------------------------------------------
+COMPARISON TABLE
+--------------------------------------------------------------------------------
+
+Feature              | Chrome | Edge  | Safari | Firefox
+---------------------|--------|-------|--------|----------
+Text-to-Speech       | ✓      | ✓     | ✓      | ✓
+Voice Recognition    | ✓      | ✓     | ✗      | ✗
+Offline TTS          | ✓      | ✓     | ✓      | ✓
+Offline Voice        | ✗      | ✗     | ✗      | ✗
+Cloud Processing     | Voice  | Voice | N/A    | N/A
+
+
+================================================================================
+SECTION 9: SUMMARY
+================================================================================
+
+--------------------------------------------------------------------------------
+WHAT USERS CAN DO
+--------------------------------------------------------------------------------
+
+- Navigate to any page via voice (9 routes)
+- Get information about current page
+- Stop/start TTS at any time
+- Customize voice settings (speed, pitch, volume)
+- Control settings via voice commands
+- Get help menu showing all commands
+
+--------------------------------------------------------------------------------
+HOW IT WORKS TECHNICALLY
+--------------------------------------------------------------------------------
+
+1. VoiceControlButton - UI component with click handler
+2. useVoiceCommands - Captures voice → converts to text → matches patterns
+3. Pattern Matching - Regex matches transcript to commands
+4. Action Execution - Runs navigate() or speak()
+5. useTTS - Converts text → audio using OS engine
+6. Settings - Saved in localStorage, persist across sessions
+
+--------------------------------------------------------------------------------
+KEY TECHNOLOGIES
+--------------------------------------------------------------------------------
+
+- Web Speech API (SpeechSynthesis + SpeechRecognition)
+- React Hooks (useState, useEffect, useCallback, useRef)
+- TypeScript for type safety
+- React Router for navigation
+- localStorage for persistence
+
+--------------------------------------------------------------------------------
+FILES CREATED/MODIFIED
+--------------------------------------------------------------------------------
+
+NEW FILES:
+- frontend/src/hooks/useTTS.ts
+- frontend/src/hooks/useVoiceCommands.ts
+- frontend/src/components/VoiceControlButton.tsx
+
+MODIFIED FILES:
+- frontend/src/layout/Header.tsx (added VoiceControlButton)
+- frontend/src/pages/Settings.tsx (enhanced with TTS settings)
+
+--------------------------------------------------------------------------------
+PROJECT STATS
+--------------------------------------------------------------------------------
+
+Total Voice Commands: 15+
+Navigation Routes: 9
+Settings Options: 6 (rate, pitch, volume, voice, TTS toggle, voice commands toggle)
+Browser Support: TTS (all), Voice (Chrome/Edge only)
+External Dependencies: 0 (uses native APIs)
+Lines of Code: ~500 across all files
+
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+Generated: 2025
+Project: I-IMS (Inclusive Inventory Management System)
+Developer: Aaditya Joshua Srivastava
+Role: Audio Software Engineer (TTS & Voice Commands)
+================================================================================
