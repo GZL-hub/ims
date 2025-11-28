@@ -70,8 +70,10 @@ const Header: React.FC = () => {
       {/* Right side actions */}
       <div className="flex items-center gap-2 ml-auto sm:ml-0">
 
-        {/*Voice Control Button*/}
-        <VoiceControlButton />
+        {/* Voice Control Button */}
+        <div className="flex items-center">
+          <VoiceControlButton />
+        </div>
 
         {/* Notifications */}
         <button

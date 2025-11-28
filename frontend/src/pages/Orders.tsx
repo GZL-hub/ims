@@ -11,7 +11,7 @@ import {
 } from "../services/orderService"; 
 import AddOrderModal from "../components/orders/AddOrderModal";
 import SuccessToast from "../components/inventory/SuccessToast";
-import SearchAndFilter from "../components/inventory/SearchAndFilter";
+import OrderSearchAndFilter from "../components/orders/OrderSearchAndFilter";
 import OrderTable from "../components/orders/OrderTable";
 
 type ModalType = "add" | null;
@@ -200,6 +200,10 @@ const Orders: React.FC = () => {
           return new Date(b.date_created).getTime() - new Date(a.date_created).getTime();
         case "date-oldest":
           return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
+        case "customer-asc":
+          return a.customer_name.localeCompare(b.customer_name);
+        case "customer-desc":
+          return b.customer_name.localeCompare(a.customer_name);
         default:
           return 0;
       }
@@ -215,19 +219,16 @@ const Orders: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        <SearchAndFilter
+        <OrderSearchAndFilter
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          selectedCategory=""
-          onCategoryChange={() => {}}
           selectedStatus={selectedStatus}
           onStatusChange={setSelectedStatus}
-          categories={[]}
           sortBy={sortBy}
           onSortChange={setSortBy}
-          onAddItem={openAddModal}
+          onAddOrder={openAddModal}
         />
-        <OrderTable orders={filteredOrders} setOrders={setOrders} />
+        <OrderTable orders={filteredOrders} setOrders={setOrders} onShowSuccess={showSuccessMessage} />
       </div>
 
       <AddOrderModal

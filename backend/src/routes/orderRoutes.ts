@@ -4,6 +4,7 @@ import {
   getAllOrders,
   getOrderById,
   updateOrder,
+  deleteOrder,
 } from "../controllers/orderController.js";
 import { authenticate, requirePermission } from "../middleware/authMiddleware.js";
 
@@ -21,5 +22,8 @@ router.post("/", requirePermission("orders:create"), createOrder);
 
 // PUT route - full order update (edit customer, items, status, etc.)
 router.put("/:id", requirePermission("orders:update"), updateOrder);
+
+// DELETE route
+router.delete("/:id", requirePermission("orders:delete"), deleteOrder);
 
 export default router;
