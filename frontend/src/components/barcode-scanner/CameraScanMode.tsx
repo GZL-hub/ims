@@ -42,7 +42,7 @@ const CameraScanMode: React.FC<CameraScanModeProps> = ({
 
         // Request camera permission and start decoding
         await codeReaderRef.current.decodeFromVideoDevice(
-          undefined, // Use default camera
+           null, // Use default camera
           videoRef.current,
           (result, error) => {
             if (result) {

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Mic, MicOff, Volume2} from 'lucide-react';
+import {Mic, Volume2} from 'lucide-react';
 import { useTTS } from '../hooks/useTTS';
 import { useVoiceCommands } from '../hooks/useVoiceCommands';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -108,7 +108,7 @@ const VoiceControlButton: React.FC = () => {
         //Page specific commands
         {
             command: /generate (?:a )?(pdf|csv) report/i,
-            action: (matches) => {
+            action: (matches?: string[] | undefined) => {
                 const format = matches?.[1]?.toLowerCase();
                 speak(`Generating ${format} report. This feature will be implemented soon.`);
                 //call report generation API
