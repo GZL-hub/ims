@@ -58,8 +58,30 @@ export const updateOrder = async (req: Request, res: Response) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // If items changed, adjust inventory
-    if (items) {
+    const oldStatus = order.status;
+
+    // Handle status change first (before items update)
+    if (status && ["Pending", "Completed", "Cancelled"].includes(status)) {
+      // Prevent changing status if already completed or cancelled
+      if ((oldStatus === "Completed" || oldStatus === "Cancelled") && status !== oldStatus) {
+        return res.status(400).json({ message: `Cannot change status from ${oldStatus} to ${status}` });
+      }
+
+      // Only restore inventory if cancelling a pending/completed order
+      if (status === "Cancelled" && oldStatus !== "Cancelled") {
+        for (const item of order.items) {
+          const invItem = await Inventory.findById(item.inventoryId);
+          if (invItem) {
+            invItem.quantity += item.quantity;
+            await invItem.save();
+          }
+        }
+      }
+      order.status = status;
+    }
+
+    // If items changed, adjust inventory (only for pending orders)
+    if (items && order.status === "Pending") {
       // Restore old items to inventory
       for (const oldItem of order.items) {
         const invItem = await Inventory.findById(oldItem.inventoryId);
@@ -82,28 +104,42 @@ export const updateOrder = async (req: Request, res: Response) => {
       order.items = items;
     }
 
-    if (customer_name) order.customer_name = customer_name;
-    if (email) order.email = email;
-    if (organization) order.organization = organization;
-    if (phone) order.phone = phone;
-    if (status && ["Pending", "Completed", "Cancelled"].includes(status)) {
-    // Only restore inventory if cancelling now
-    if (status === "Cancelled" && order.status !== "Cancelled") {
-        for (const item of order.items) {
-        const invItem = await Inventory.findById(item.inventoryId);
-        if (invItem) {
-            invItem.quantity += item.quantity;
-            await invItem.save();
-        }
-        }
-    }
-    order.status = status;
-    }
+    // Update other fields if provided
+    if (customer_name !== undefined) order.customer_name = customer_name;
+    if (email !== undefined) order.email = email;
+    if (organization !== undefined) order.organization = organization;
+    if (phone !== undefined) order.phone = phone;
 
     order.last_updated = new Date();
-    await order.save();
+
+    // Use save with validateModifiedOnly to only validate changed fields
+    await order.save({ validateModifiedOnly: true });
 
     res.json(order);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Delete order
+export const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Restore inventory if order is not cancelled
+    if (order.status !== "Cancelled") {
+      for (const item of order.items) {
+        const invItem = await Inventory.findById(item.inventoryId);
+        if (invItem) {
+          invItem.quantity += item.quantity;
+          await invItem.save();
+        }
+      }
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: "Order deleted successfully" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
