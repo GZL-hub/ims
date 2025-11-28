@@ -6,6 +6,7 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -32,6 +33,9 @@ app.use("/api/inventory", inventoryRoutes);
 
 // Order routes
 app.use("/api/orders", orderRoutes);
+
+// Customer routes
+app.use("/api/customers", customerRoutes);
 
 // Connect to MongoDB
 mongoose 
