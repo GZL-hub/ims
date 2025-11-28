@@ -1,14 +1,26 @@
 import { Request, Response } from "express";
 import Order from "../models/orderModel.js";
 import Inventory from "../models/inventoryModel.js";
+import Customer from "../models/customerModel.js";
 
 // Create a new order
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { customer_name, email, organization, phone, items } = req.body;
+    const { customerId, customer_name, email, organization, phone, items } = req.body;
 
     if (!customer_name || !items || !items.length) {
       return res.status(400).json({ message: "Customer name and items are required" });
+    }
+
+    // If customerId provided, verify customer exists and is active
+    if (customerId) {
+      const customer = await Customer.findById(customerId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      if (customer.status === "Inactive") {
+        return res.status(400).json({ message: "Cannot create orders for inactive customers" });
+      }
     }
 
     // Deduct quantities from inventory
@@ -21,8 +33,13 @@ export const createOrder = async (req: Request, res: Response) => {
       await inventoryItem.save();
     }
 
-    const order = new Order({ customer_name, email, organization, phone, items });
+    const order = new Order({ customerId, customer_name, email, organization, phone, items });
     await order.save();
+
+    // Increment customer's total_orders if linked
+    if (customerId) {
+      await Customer.findByIdAndUpdate(customerId, { $inc: { total_orders: 1 } });
+    }
 
     res.status(201).json(order);
   } catch (err: any) {

@@ -8,10 +8,11 @@ export type OrderItem = {
 
 export type Order = {
   _id: string;
+  customerId?: string; // Optional link to customer
   customer_name: string;
-  email: string;    
-  organization: string;   
-  phone?: string;  
+  email: string;
+  organization: string;
+  phone?: string;
   items: OrderItem[];
   status: 'Pending' | 'Completed' | 'Cancelled';
   date_created: string;
@@ -40,9 +41,10 @@ type BackendOrder = {
 };
 
 /** Utility to map backend → frontend */
-const mapBackendOrder = (order: BackendOrder): Order => ({
+const mapBackendOrder = (order: BackendOrder & { customerId?: string }): Order => ({
   _id: order._id,
-  customer_name: order.customer_name, // map customer_name → customer_name
+  customerId: order.customerId,
+  customer_name: order.customer_name,
   email: order.email,
   organization: order.organization,
   phone: order.phone,
@@ -51,7 +53,7 @@ const mapBackendOrder = (order: BackendOrder): Order => ({
   last_updated: order.last_updated,
   items: order.items.map((i) => ({
     inventoryId: i.inventoryId,
-    itemName: i.item_name, // map item_name → itemName
+    itemName: i.item_name,
     quantity: i.quantity,
   })),
 });
@@ -91,14 +93,15 @@ export const getOrderById = async (id: string): Promise<Order> => {
 export const createOrder = async (order: OrderInput): Promise<Order> => {
   try {
     const payload = {
-      customer_name: order.customer_name, 
-      email: order.email,  
+      customerId: order.customerId,
+      customer_name: order.customer_name,
+      email: order.email,
       organization: order.organization,
       phone: order.phone,
       status: order.status,
       items: order.items.map((i) => ({
         inventoryId: i.inventoryId,
-        item_name: i.itemName, 
+        item_name: i.itemName,
         quantity: i.quantity,
       })),
     };
