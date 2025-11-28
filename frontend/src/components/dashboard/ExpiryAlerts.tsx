@@ -1,57 +1,31 @@
-import React from 'react';
-import { AlertTriangle, AlertCircle, TrendingDown } from 'lucide-react';
-
-interface Alert {
-  id: number;
-  itemName: string;
-  sku: string;
-  quantity: number;
-  expiryDate: string;
-  daysLeft: number;
-  severity: 'critical' | 'warning' | 'low-stock';
-}
+import React, { useEffect, useState } from 'react';
+import { AlertTriangle, AlertCircle, TrendingDown, XCircle } from 'lucide-react';
+import { getInventoryAlerts, type InventoryAlert } from '../../services/inventoryService';
 
 const ExpiryAlerts: React.FC = () => {
-  const alerts: Alert[] = [
-    {
-      id: 1,
-      itemName: 'Medical Supplies Kit A',
-      sku: 'MED-001',
-      quantity: 45,
-      expiryDate: '2025-11-02',
-      daysLeft: 8,
-      severity: 'critical',
-    },
-    {
-      id: 2,
-      itemName: 'Office Paper Reams',
-      sku: 'OFF-234',
-      quantity: 12,
-      expiryDate: '2025-11-15',
-      daysLeft: 21,
-      severity: 'warning',
-    },
-    {
-      id: 3,
-      itemName: 'Safety Equipment Set',
-      sku: 'SAF-789',
-      quantity: 5,
-      expiryDate: '-',
-      daysLeft: 0,
-      severity: 'low-stock',
-    },
-    {
-      id: 4,
-      itemName: 'Cleaning Supplies',
-      sku: 'CLN-456',
-      quantity: 23,
-      expiryDate: '2025-11-20',
-      daysLeft: 26,
-      severity: 'warning',
-    },
-  ];
+  const [alerts, setAlerts] = useState<InventoryAlert[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getSeverityStyles = (severity: Alert['severity']) => {
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        setLoading(true);
+        const data = await getInventoryAlerts();
+        setAlerts(data.alerts);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load alerts');
+        console.error('Error fetching alerts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
+  const getSeverityStyles = (severity: InventoryAlert['severity']) => {
     switch (severity) {
       case 'critical':
         return {
@@ -74,19 +48,55 @@ const ExpiryAlerts: React.FC = () => {
           icon: <TrendingDown className="w-4 h-4 text-yellow-600 dark:text-yellow-100" />,
           text: 'text-yellow-700 dark:text-yellow-200',
         };
+      case 'out-of-stock':
+        return {
+          bg: 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-700',
+          badge: 'bg-red-600 dark:bg-red-700',
+          icon: <XCircle className="w-4 h-4 text-red-600 dark:text-red-100" />,
+          text: 'text-red-700 dark:text-red-200',
+        };
     }
   };
 
-  const getSeverityLabel = (severity: Alert['severity']) => {
-    switch (severity) {
-      case 'critical':
+  const getSeverityLabel = (alertType: InventoryAlert['alertType']) => {
+    switch (alertType) {
+      case 'expired':
+        return 'Expired';
+      case 'expiring-soon':
         return 'Expires Soon';
-      case 'warning':
+      case 'expiring':
         return 'Expiring';
       case 'low-stock':
         return 'Low Stock';
+      case 'out-of-stock':
+        return 'Out of Stock';
     }
   };
+
+  const formatExpiryDate = (date?: string) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg p-6 shadow-sm">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-text-600 dark:text-gray-300">Loading alerts...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg p-6 shadow-sm">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-600 dark:text-red-400">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background-50 dark:bg-background-100 border border-background-200 dark:border-background-300 rounded-lg p-6 shadow-sm">
@@ -101,56 +111,59 @@ const ExpiryAlerts: React.FC = () => {
       </div>
 
       <div className="space-y-3 max-h-[450px] overflow-y-auto">
-        {alerts.map((alert) => {
-          const styles = getSeverityStyles(alert.severity);
-          return (
-            <div
-              key={alert.id}
-              className={`border rounded-lg p-4 ${styles.bg} hover:shadow-md transition-all duration-200`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className={`w-8 h-8 rounded-full ${styles.badge} flex items-center justify-center text-white flex-shrink-0`}>
-                    {styles.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-text-950 dark:text-white font-semibold text-sm">{alert.itemName}</h3>
-                      <span className={`px-2 py-0.5 ${styles.badge} text-white text-xs rounded-full font-medium`}>
-                        {getSeverityLabel(alert.severity)}
-                      </span>
+        {alerts.length === 0 ? (
+          <div className="text-center py-8 text-text-600 dark:text-gray-300">
+            No alerts at this time
+          </div>
+        ) : (
+          alerts.map((alert) => {
+            const styles = getSeverityStyles(alert.severity);
+            return (
+              <div
+                key={alert._id}
+                className={`border rounded-lg p-4 ${styles.bg} hover:shadow-md transition-all duration-200`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className={`w-8 h-8 rounded-full ${styles.badge} flex items-center justify-center text-white flex-shrink-0`}>
+                      {styles.icon}
                     </div>
-                    <p className="text-text-600 dark:text-gray-300 text-xs mb-2">SKU: {alert.sku}</p>
-                    <div className="flex items-center gap-4 text-xs">
-                      <div>
-                        <span className="text-text-500 dark:text-gray-300">Quantity:</span>
-                        <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600 dark:text-red-300' : 'text-text-700 dark:text-white'}`}>
-                          {alert.quantity} units
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-text-950 dark:text-white font-semibold text-sm">{alert.item_name}</h3>
+                        <span className={`px-2 py-0.5 ${styles.badge} text-white text-xs rounded-full font-medium`}>
+                          {getSeverityLabel(alert.alertType)}
                         </span>
                       </div>
-                      {alert.severity !== 'low-stock' && (
-                        <>
-                          <div>
-                            <span className="text-text-500 dark:text-gray-300">Expires:</span>
-                            <span className="ml-1 font-semibold text-text-700 dark:text-white">{alert.expiryDate}</span>
-                          </div>
-                          <div>
-                            <span className={`font-semibold ${styles.text}`}>
-                              {alert.daysLeft} days left
-                            </span>
-                          </div>
-                        </>
-                      )}
+                      <p className="text-text-600 dark:text-gray-300 text-xs mb-2">Barcode: {alert.barcode}</p>
+                      <div className="flex items-center gap-4 text-xs">
+                        <div>
+                          <span className="text-text-500 dark:text-gray-300">Quantity:</span>
+                          <span className={`ml-1 font-semibold ${alert.quantity < 10 ? 'text-red-600 dark:text-red-300' : 'text-text-700 dark:text-white'}`}>
+                            {alert.quantity} units
+                          </span>
+                        </div>
+                        {alert.alertType !== 'low-stock' && alert.alertType !== 'out-of-stock' && (
+                          <>
+                            <div>
+                              <span className="text-text-500 dark:text-gray-300">Expires:</span>
+                              <span className="ml-1 font-semibold text-text-700 dark:text-white">{formatExpiryDate(alert.expiry_date)}</span>
+                            </div>
+                            <div>
+                              <span className={`font-semibold ${styles.text}`}>
+                                {alert.daysLeft > 0 ? `${alert.daysLeft} days left` : 'Expired'}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <button className="text-primary-600 dark:text-white hover:text-primary-700 dark:hover:text-gray-200 text-xs font-medium flex-shrink-0">
-                  Action
-                </button>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       <div className="mt-4 pt-4 border-t border-background-200 dark:border-background-300">
