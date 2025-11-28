@@ -1,5 +1,4 @@
-import React, { useMemo } from "react";
-import ReactDOM from "react-dom";
+import React, { useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,13 +10,16 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { ChevronUp, ChevronDown, ShoppingCart, X, Edit2, Clock, CheckCircle, XCircle } from "lucide-react";
-import { updateOrder, type Order as OrderType } from "../../services/orderService";
+import { ChevronUp, ChevronDown, ShoppingCart, Clock, CheckCircle, XCircle } from "lucide-react";
+import { updateOrder, deleteOrder, type Order as OrderType } from "../../services/orderService";
 import EditOrderModal from "./EditOrderModal";
+import OrderDetailsModal from "./OrderDetailsModal";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 interface OrdersTableProps {
   orders: OrderType[];
   setOrders: React.Dispatch<React.SetStateAction<OrderType[]>>;
+  onShowSuccess?: (message: string) => void;
 }
 
 const columnHelper = createColumnHelper<OrderType>();
@@ -62,51 +64,123 @@ const getStatusBadge = (status: string) => {
   );
 };
 
-const OrdersTable: React.FC<OrdersTableProps> = ({ orders, setOrders }) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [expandedOrder, setExpandedOrder] = React.useState<OrderType | null>(null);
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [editableOrder, setEditableOrder] = React.useState<OrderType | null>(null);
+const OrdersTable: React.FC<OrdersTableProps> = ({ orders, setOrders, onShowSuccess }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [expandedOrder, setExpandedOrder] = useState<OrderType | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableOrder, setEditableOrder] = useState<OrderType | null>(null);
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: "complete" | "cancel" | "delete" | null;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    type: null,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Open edit modal
-  const handleEditClick = (order: OrderType) => {
-    setEditableOrder(order); 
-    setIsEditing(true);
-  };
-
-  const handleUpdateStatus = async (order: OrderType, newStatus: "Completed" | "Cancelled") => {
-    try {
-        const updatedOrder = await updateOrder(order._id, { ...order, status: newStatus });
-        setOrders(prev => {
-        const updatedOrders = [...prev];
-        const index = updatedOrders.findIndex(o => o._id === updatedOrder._id);
-        if (index !== -1) updatedOrders[index] = updatedOrder;
-        return updatedOrders;
-        });
-        setExpandedOrder(null); 
-    } catch (err) {
-        console.error(err);
-        alert("Error updating order status");
+  const handleEditClick = () => {
+    if (expandedOrder) {
+      setEditableOrder(expandedOrder);
+      setIsEditing(true);
+      setExpandedOrder(null);
     }
   };
 
-  // Save handler
+  // Complete order with confirmation
+  const handleCompleteOrder = () => {
+    if (!expandedOrder) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      type: "complete",
+      title: "Complete Order",
+      message: `Are you sure you want to mark this order as completed? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          const updatedOrder = await updateOrder(expandedOrder._id, { status: "Completed" });
+          setOrders((prev) => prev.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
+          setExpandedOrder(null);
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+          onShowSuccess?.("Order marked as completed successfully!");
+        } catch (err: any) {
+          console.error(err);
+          alert(err.response?.data?.message || "Error completing order");
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      },
+    });
+  };
+
+  // Cancel order with confirmation
+  const handleCancelOrder = () => {
+    if (!expandedOrder) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      type: "cancel",
+      title: "Cancel Order",
+      message: `Are you sure you want to cancel this order? The inventory will be restored.`,
+      onConfirm: async () => {
+        try {
+          const updatedOrder = await updateOrder(expandedOrder._id, { status: "Cancelled" });
+          setOrders((prev) => prev.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
+          setExpandedOrder(null);
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+          onShowSuccess?.("Order cancelled successfully!");
+        } catch (err: any) {
+          console.error(err);
+          alert(err.response?.data?.message || "Error cancelling order");
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      },
+    });
+  };
+
+  // Delete order with confirmation
+  const handleDeleteOrder = () => {
+    if (!expandedOrder) return;
+
+    setConfirmDialog({
+      isOpen: true,
+      type: "delete",
+      title: "Delete Order",
+      message: `Are you sure you want to permanently delete this order? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await deleteOrder(expandedOrder._id);
+          setOrders((prev) => prev.filter((o) => o._id !== expandedOrder._id));
+          setExpandedOrder(null);
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+          onShowSuccess?.("Order deleted successfully!");
+        } catch (err: any) {
+          console.error(err);
+          alert(err.response?.data?.message || "Error deleting order");
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
+      },
+    });
+  };
+
+  // Save handler for edit modal
   const handleSaveEdit = async (updatedOrder: OrderType) => {
     try {
-        const updated = await updateOrder(updatedOrder._id, updatedOrder);
-        setOrders(prev => {
-        const updatedOrders = [...prev];
-        const index = updatedOrders.findIndex(o => o._id === updated._id);
-        if (index !== -1) updatedOrders[index] = updated;
-        return updatedOrders;
-        });
-        setEditableOrder(null);
-        setIsEditing(false);
-        setExpandedOrder(updated);
-    } catch (err) {
-        console.error(err);
-        alert("Error updating order");
+      const updated = await updateOrder(updatedOrder._id, updatedOrder);
+      setOrders((prev) => prev.map((o) => (o._id === updated._id ? updated : o)));
+      setEditableOrder(null);
+      setIsEditing(false);
+      onShowSuccess?.("Order updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Error updating order");
     }
   };
 
@@ -310,88 +384,50 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, setOrders }) => {
         )}
       </div>
 
-      {/* Expanded Order Modal */}
-      {expandedOrder && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-75 p-4"
-          onClick={() => setExpandedOrder(null)}
-        >
-          <div className="bg-white dark:bg-background-50 rounded-lg max-w-3xl w-full p-6 relative" onClick={e => e.stopPropagation()}>
-            <div className="absolute top-4 right-4 flex items-center gap-3">
-            <button
-                onClick={() => handleEditClick(expandedOrder!)}
-                className="p-2 rounded-md hover:bg-background-100 dark:hover:bg-background-200 transition"
-                title="Edit Order"
-            >
-                <Edit2 className="w-5 h-5" />
-            </button>
-
-            <button
-                onClick={() => setExpandedOrder(null)} // closes the view modal
-                className="p-2 rounded-md hover:bg-background-100 dark:hover:bg-background-200 transition"
-                title="Close"
-            >
-                <X className="w-6 h-6" />
-            </button>
-            </div>
-            <h2 className="text-lg font-semibold text-text-900 dark:text-white mb-4">Order Details</h2>
-            <p><strong>Customer:</strong> {expandedOrder.customer_name}</p>
-            <p><strong>Email:</strong> {expandedOrder.email || "-"}</p>
-            <p><strong>Organization:</strong> {expandedOrder.organization || "-"}</p>
-            <p><strong>Phone:</strong> {expandedOrder.phone || "-"}</p>
-            <p><strong>Status:</strong> {expandedOrder.status}</p>
-            <p><strong>Date:</strong> {new Date(expandedOrder.date_created).toLocaleString()}</p>
-            {/* Items List */}
-            <div className="mt-4">
-            <h3 className="font-medium text-text-900 dark:text-white mb-2">Items</h3>
-            <ul className="list-disc pl-5 space-y-1">
-                {expandedOrder.items.map((item) => (
-                <li key={item.inventoryId}>
-                    {item.itemName} - Quantity: {item.quantity}
-                </li>
-                ))}
-            </ul>
-
-            {/* Action Buttons (Complete & Cancel) */}
-            <div className="mt-6 flex justify-end gap-4">
-            <button
-                onClick={() => handleUpdateStatus(expandedOrder, "Completed")}
-                disabled={expandedOrder.status === "Completed" || expandedOrder.status === "Cancelled"}
-                className={`px-4 py-2 rounded-lg font-medium text-white transition ${
-                expandedOrder.status === "Completed" || expandedOrder.status === "Cancelled"
-                    ? "bg-green-300 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
-            >
-                Complete
-            </button>
-
-            <button
-                onClick={() => handleUpdateStatus(expandedOrder, "Cancelled")}
-                disabled={expandedOrder.status === "Cancelled" || expandedOrder.status === "Completed"}
-                className={`px-4 py-2 rounded-lg font-medium text-white transition ${
-                expandedOrder.status === "Cancelled" || expandedOrder.status === "Completed"
-                    ? "bg-red-300 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-            >
-                Cancel
-            </button>
-            </div>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {/* Order Details Modal */}
+      {expandedOrder && (
+        <OrderDetailsModal
+          order={expandedOrder}
+          onClose={() => setExpandedOrder(null)}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteOrder}
+          onComplete={handleCompleteOrder}
+          onCancel={handleCancelOrder}
+        />
       )}
 
       {/* Edit Order Modal */}
       {isEditing && editableOrder && (
-         <EditOrderModal
-            order={editableOrder}
-            onClose={() => setIsEditing(false)}
-            onSave={handleSaveEdit}
-         />
+        <EditOrderModal
+          order={editableOrder}
+          onClose={() => setIsEditing(false)}
+          onSave={handleSaveEdit}
+        />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={
+          confirmDialog.type === "delete"
+            ? "danger"
+            : confirmDialog.type === "cancel"
+            ? "warning"
+            : "success"
+        }
+        confirmText={
+          confirmDialog.type === "delete"
+            ? "Delete"
+            : confirmDialog.type === "cancel"
+            ? "Cancel Order"
+            : "Complete"
+        }
+        cancelText="Go Back"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </>
   );
 };
