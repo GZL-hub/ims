@@ -55,6 +55,20 @@ const Orders: React.FC = () => {
     items: [],
   });
 
+  // Handle adding a custom item to the order
+  const handleAddCustomItem = (name: string, quantity: number, category?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, {
+         inventoryId: `custom-${Date.now()}`, 
+         itemName: name, 
+         quantity,
+         category ,
+         isCustom: true,
+        }],
+    }));
+  }
+
   // Fetch orders, inventory, and customers
   useEffect(() => {
     const fetchData = async () => {
@@ -278,6 +292,7 @@ const Orders: React.FC = () => {
         isSubmitting={isSubmitting}
         inventoryItems={inventoryItems}
         customers={customers}
+        onAddCustomItem={handleAddCustomItem}
       />
 
       <SuccessToast message={successMessage} isVisible={showSuccess} />

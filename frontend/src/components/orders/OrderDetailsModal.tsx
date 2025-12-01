@@ -58,6 +58,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const isCompleted = order.status === "Completed";
   const isCancelled = order.status === "Cancelled";
 
+  const sortedItems = React.useMemo(() => {
+    return [...order.items].sort((a, b) =>
+      a.itemName.localeCompare(b.itemName)
+    );
+  }, [order.items]);
+
   return ReactDOM.createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-75 p-4"
@@ -179,7 +185,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-background-50 divide-y divide-background-200 dark:divide-background-300">
-                  {order.items.map((item, index) => (
+                  {sortedItems.map((item, index) => (
                     <tr key={index} className="hover:bg-background-50 dark:hover:bg-background-100 transition-colors">
                       <td className="px-4 py-3 text-sm font-medium text-text-900 dark:text-white">
                         {item.itemName}
