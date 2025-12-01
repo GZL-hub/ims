@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOrderItem {
-  inventoryId: mongoose.Schema.Types.ObjectId; // Reference to Inventory item
+  inventoryId: mongoose.Schema.Types.ObjectId | string; // Reference to Inventory item or custom item ID
   item_name: string;
   quantity: number;
 }
@@ -19,7 +19,7 @@ export interface IOrder extends Document {
 }
 
 const OrderItemSchema = new Schema<IOrderItem>({
-  inventoryId: { type: Schema.Types.ObjectId, ref: "Inventory", required: true },
+  inventoryId: { type: Schema.Types.Mixed, ref: "Inventory", required: true },
   item_name: { type: String, required: true },
   quantity: { type: Number, required: true },
 });

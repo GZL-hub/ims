@@ -25,6 +25,11 @@ export const createOrder = async (req: Request, res: Response) => {
 
     // Deduct quantities from inventory
     for (const orderItem of items) {
+      // Skip inventory check for custom items
+      if (typeof orderItem.inventoryId === "string" && orderItem.inventoryId.startsWith("custom-")) {
+        continue; 
+      }
+
       const inventoryItem = await Inventory.findById(orderItem.inventoryId);
       if (!inventoryItem) return res.status(404).json({ message: `Inventory item not found: ${orderItem.item_name}` });
       if (inventoryItem.quantity < orderItem.quantity) return res.status(400).json({ message: `Not enough stock for item: ${orderItem.item_name}` });
