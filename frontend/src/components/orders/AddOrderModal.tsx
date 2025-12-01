@@ -56,9 +56,16 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
     ).slice(0, 5);
   }, [customerSearchQuery, customers]);
 
+  // Alphabetically sorted inventory items
+const sortedInventoryItems = useMemo(() => {
+  return [...inventoryItems].sort((a, b) =>
+    a.item_name.localeCompare(b.item_name)
+  );
+}, [inventoryItems]);
+
   // Compute available options for each row
   const getAvailableOptions = (rowIndex: number) =>
-    inventoryItems.filter(
+    sortedInventoryItems.filter(
       (item) =>
         !formData.items.some(
           (i, idx) => i.inventoryId === item._id && idx !== rowIndex
@@ -67,7 +74,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
 
   // Options for the "new item" row
   const getNewItemOptions = () =>
-    inventoryItems.filter(
+    sortedInventoryItems.filter(
       (item) => !formData.items.some((i) => i.inventoryId === item._id)
     );
 
